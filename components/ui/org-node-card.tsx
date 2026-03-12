@@ -1,6 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+import {
+  BrainCircuit,
+  Building2,
+  CircleDollarSign,
+  Code2,
+  Cog,
+  Headphones,
+  Laptop2,
+  Network,
+  Package,
+  Scale,
+  ShieldCheck,
+  Boxes,
+} from "lucide-react";
+import { ClaudeSparkle } from "@/components/ui/claude-logo";
 import { cn } from "@/lib/utils";
 import type { OrgNode } from "@/types";
 
@@ -8,104 +24,205 @@ interface OrgNodeCardProps {
   node: OrgNode;
   index?: number;
   className?: string;
+  rank?: number;
+  onGeneratePitch?: () => void;
 }
 
-const statusStyles = {
-  latent: "bg-transparent",
-  identified: "bg-transparent",
-  engaged: "bg-transparent",
-  pilot: "bg-transparent",
-  deployed: "bg-transparent",
+const departmentIcons: Record<string, LucideIcon> = {
+  Engineering: Code2,
+  "Platform Engineering": Boxes,
+  Security: ShieldCheck,
+  IT: Laptop2,
+  Finance: CircleDollarSign,
+  Legal: Scale,
+  Operations: Cog,
+  "Customer Support": Headphones,
+  Product: Package,
+  "Data / AI": BrainCircuit,
+  "Executive Leadership": Building2,
 };
 
-const statusText: Record<OrgNode["status"], string> = {
-  latent: "Latent",
-  identified: "Identified",
-  engaged: "Engaged",
-  pilot: "Pilot",
-  deployed: "Deployed",
+const statusStyles: Record<
+  OrgNode["status"],
+  {
+    label: string;
+    badge: string;
+    accent: string;
+    iconTone: string;
+    meter: string;
+    card: string;
+  }
+> = {
+  latent: {
+    label: "Latent",
+    badge: "border-white/10 bg-white/5 text-text-muted",
+    accent: "from-white/30 via-white/10 to-transparent",
+    iconTone: "border-white/10 bg-white/5 text-text-muted",
+    meter: "bg-white/25",
+    card: "border-white/5 bg-surface-elevated/55",
+  },
+  identified: {
+    label: "Identified",
+    badge: "border-sky-400/15 bg-sky-400/10 text-sky-200",
+    accent: "from-sky-300/70 via-sky-300/20 to-transparent",
+    iconTone: "border-sky-400/15 bg-sky-400/10 text-sky-200",
+    meter: "bg-sky-300/70",
+    card: "border-sky-400/10 bg-surface-elevated/62",
+  },
+  engaged: {
+    label: "Engaged",
+    badge: "border-claude-coral/15 bg-claude-coral/10 text-claude-coral/90",
+    accent: "from-claude-coral via-claude-coral/20 to-transparent",
+    iconTone: "border-claude-coral/15 bg-claude-coral/10 text-claude-coral/90",
+    meter: "bg-claude-coral/75",
+    card: "border-claude-coral/12 bg-surface-elevated/68",
+  },
+  pilot: {
+    label: "Pilot",
+    badge: "border-emerald-400/15 bg-emerald-400/10 text-emerald-200",
+    accent: "from-emerald-300 via-emerald-300/20 to-transparent",
+    iconTone: "border-emerald-400/15 bg-emerald-400/10 text-emerald-200",
+    meter: "bg-emerald-300/75",
+    card: "border-emerald-400/12 bg-surface-elevated/72",
+  },
+  deployed: {
+    label: "Deployed",
+    badge: "border-violet-400/15 bg-violet-400/10 text-violet-200",
+    accent: "from-violet-300 via-violet-300/20 to-transparent",
+    iconTone: "border-violet-400/15 bg-violet-400/10 text-violet-200",
+    meter: "bg-violet-300/75",
+    card: "border-violet-400/12 bg-surface-elevated/72",
+  },
 };
 
-export function OrgNodeCard({ node, index = 0, className }: OrgNodeCardProps) {
+export function OrgNodeCard({
+  node,
+  index = 0,
+  className,
+  rank,
+  onGeneratePitch,
+}: OrgNodeCardProps) {
   const isActive =
     node.status === "engaged" || node.status === "pilot" || node.status === "deployed";
+  const Icon = departmentIcons[node.name] ?? Network;
+  const style = statusStyles[node.status];
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{
         opacity: 1,
         y: 0,
-        scale: isActive ? [1, 1.012, 1] : 1,
-        boxShadow: isActive
-          ? [
-              "0 0 0 rgba(218,119,86,0)",
-              "0 8px 24px rgba(218,119,86,0.12)",
-              "0 0 0 rgba(218,119,86,0)",
-            ]
-          : "0 0 0 rgba(0,0,0,0)",
       }}
       transition={{
         delay: index * 0.02,
         duration: 0.45,
         ease: [0.25, 0.46, 0.45, 0.94],
-        boxShadow: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
-        scale: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
       }}
       className={cn(
-        "group h-full px-5 py-4 transition-colors duration-300",
-        statusStyles[node.status],
+        "group relative overflow-hidden rounded-[24px] border p-4 shadow-[0_24px_60px_rgba(0,0,0,0.12)] transition-all duration-300",
+        style.card,
+        isActive && "shadow-[0_24px_70px_rgba(218,119,86,0.12)]",
         className
       )}
     >
-      <div className="flex min-h-[152px] items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h3
-            className={cn(
-              "text-[14px] font-semibold leading-snug",
-              isActive ? "text-text-primary" : "text-text-secondary"
-            )}
-          >
-            {node.name}
-          </h3>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-text-muted">
-            {node.useCase}
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <span
-              className={cn(
-                "h-1.5 w-1.5 rounded-full",
-                node.status === "deployed" && "bg-claude-coral",
-                node.status === "pilot" && "bg-claude-coral/70",
-                node.status === "engaged" && "bg-claude-coral/50",
-                node.status === "identified" && "bg-text-muted/50",
-                node.status === "latent" && "bg-text-faint/40"
-              )}
-            />
-            <span className="text-[10px] uppercase tracking-[0.08em] text-text-faint">
-              {statusText[node.status]}
-            </span>
-          </div>
-          <p className="mt-1 text-[10px] text-text-faint">
-            {node.recommendedNextStep}
-          </p>
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r opacity-80",
+          style.accent
+        )}
+      />
+
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border",
+            style.iconTone
+          )}
+        >
+          <Icon className="h-4 w-4" strokeWidth={1.8} />
         </div>
-        <div className="flex shrink-0 flex-col items-end text-right">
-          <span
-            className={cn(
-              "text-[13px] font-semibold tabular-nums",
-              isActive ? "text-claude-coral" : "text-text-muted"
-            )}
-          >
-            ${node.arrPotential.toFixed(2)}M
-          </span>
-          <span className="mt-0.5 text-[10px] uppercase tracking-[0.08em] text-text-muted">
-            ARR
-          </span>
-          <span className="mt-1 text-[10px] tabular-nums text-text-muted">
-            {node.buyingLikelihood}%
-          </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {rank ? (
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-text-faint">
+                    #{rank} priority
+                  </span>
+                ) : null}
+                <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em]", style.badge)}>
+                  {style.label}
+                </span>
+              </div>
+
+              <h3
+                className={cn(
+                  "mt-3 text-[15px] font-semibold leading-snug",
+                  isActive ? "text-text-primary" : "text-text-secondary"
+                )}
+              >
+                {node.name}
+              </h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-text-muted">
+                {node.useCase}
+              </p>
+            </div>
+
+            {onGeneratePitch ? (
+              <button
+                onClick={onGeneratePitch}
+                className="rounded-full border border-claude-coral/15 bg-claude-coral/[0.08] p-2 text-claude-coral/80 transition-colors hover:bg-claude-coral/[0.14]"
+                title={`Generate expansion pitch for ${node.name}`}
+              >
+                <ClaudeSparkle size={12} />
+              </button>
+            ) : null}
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-white/5 bg-black/10 px-3 py-2.5">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint">
+                ARR potential
+              </p>
+              <p className={cn("mt-1 text-[14px] font-semibold tabular-nums", isActive ? "text-claude-coral" : "text-text-secondary")}>
+                ${node.arrPotential.toFixed(2)}M
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/5 bg-black/10 px-3 py-2.5">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint">
+                Likelihood
+              </p>
+              <p className="mt-1 text-[14px] font-semibold tabular-nums text-text-secondary">
+                {node.buyingLikelihood}%
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-text-faint">
+              <span>Momentum</span>
+              <span>{node.buyingLikelihood}%</span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
+              <div
+                className={cn("h-full rounded-full", style.meter)}
+                style={{ width: `${Math.max(node.buyingLikelihood, 8)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 border-t border-white/5 pt-3">
+            <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint">
+              Next move
+            </p>
+            <p className="mt-1 text-[12px] leading-relaxed text-text-secondary">
+              {node.recommendedNextStep}
+            </p>
+          </div>
         </div>
       </div>
     </motion.div>

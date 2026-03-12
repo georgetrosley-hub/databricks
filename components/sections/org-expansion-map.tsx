@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { ArrowRight, CircleAlert, Target, TrendingUp, Users } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { OrgNodeCard } from "@/components/ui/org-node-card";
 import { StreamingContent } from "@/components/ui/streaming-content";
@@ -13,11 +14,6 @@ interface OrgExpansionMapProps {
   nodes: OrgNode[];
   account: Account;
   competitors: Competitor[];
-}
-
-interface NodePosition {
-  x: number;
-  y: number;
 }
 
 const departmentOrder = [
@@ -48,62 +44,86 @@ const defaultUseCases: Record<(typeof departmentOrder)[number], string> = {
   "Executive Leadership": "Strategic synthesis and reporting",
 };
 
-const nodePositions: Record<(typeof departmentOrder)[number], NodePosition> = {
-  Engineering: { x: 15, y: 16 },
-  "Platform Engineering": { x: 39, y: 9 },
-  Security: { x: 72, y: 16 },
-  IT: { x: 13, y: 42 },
-  Finance: { x: 31, y: 61 },
-  Legal: { x: 50, y: 74 },
-  Operations: { x: 69, y: 61 },
-  "Customer Support": { x: 87, y: 42 },
-  Product: { x: 25, y: 88 },
-  "Data / AI": { x: 75, y: 88 },
-  "Executive Leadership": { x: 50, y: 40 },
+const activeStatuses = new Set<OrgNode["status"]>(["engaged", "pilot", "deployed"]);
+
+const statusPriority: Record<OrgNode["status"], number> = {
+  deployed: 0,
+  pilot: 1,
+  engaged: 2,
+  identified: 3,
+  latent: 4,
 };
 
-const connections: Array<[(typeof departmentOrder)[number], (typeof departmentOrder)[number]]> = [
-  ["Engineering", "Platform Engineering"],
-  ["Platform Engineering", "Security"],
-  ["Security", "IT"],
-  ["IT", "Operations"],
-  ["Operations", "Customer Support"],
-  ["Customer Support", "Product"],
-  ["Product", "Data / AI"],
-  ["Data / AI", "Engineering"],
-  ["Finance", "Legal"],
-  ["Legal", "Operations"],
-  ["Platform Engineering", "Executive Leadership"],
-  ["Finance", "Executive Leadership"],
-  ["Product", "Executive Leadership"],
-  ["Data / AI", "Executive Leadership"],
-  ["Customer Support", "Executive Leadership"],
-  ["Security", "Executive Leadership"],
-];
+const laneConfig = [
+  {
+    id: "active",
+    title: "Active motion",
+    description: "Departments already in live conversations, pilots, or deployment.",
+    emptyState: "No departments are in active motion yet.",
+    className: "border-claude-coral/12 bg-claude-coral/[0.04]",
+    items: (nodes: OrgNode[]) => nodes.filter((node) => activeStatuses.has(node.status)),
+  },
+  {
+    id: "next",
+    title: "Build next",
+    description: "Qualified expansion candidates with strong fit but more mapping required.",
+    emptyState: "No near-term candidates have been identified yet.",
+    className: "border-sky-400/12 bg-sky-400/[0.04]",
+    items: (nodes: OrgNode[]) => nodes.filter((node) => node.status === "identified"),
+  },
+  {
+    id: "later",
+    title: "Longer-term bets",
+    description: "Strategic teams to sequence after the initial wedge is proving out.",
+    emptyState: "No longer-term bets are currently queued.",
+    className: "border-white/8 bg-white/[0.02]",
+    items: (nodes: OrgNode[]) => nodes.filter((node) => node.status === "latent"),
+  },
+] as const;
 
 export function OrgExpansionMap({ nodes, account, competitors }: OrgExpansionMapProps) {
-  const normalizedNodes: OrgNode[] = departmentOrder.map((name) => {
-    const existing = nodes.find((node) => node.name === name);
-    if (existing) return existing;
-    return {
-      id: name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-      name,
-      useCase: defaultUseCases[name],
-      buyingLikelihood: 50,
-      arrPotential: 0,
-      status: "latent",
-      recommendedNextStep: "Map stakeholders",
-    };
-  });
-
-  const activeCount = normalizedNodes.filter(
-    (n) => n.status === "pilot" || n.status === "deployed" || n.status === "engaged"
-  ).length;
-
-  const totalPotential = normalizedNodes.reduce((sum, node) => sum + node.arrPotential, 0);
-  const activeNodes = normalizedNodes.filter(
-    (n) => n.status === "engaged" || n.status === "pilot" || n.status === "deployed"
+  const normalizedNodes = useMemo<OrgNode[]>(
+    () =>
+      departmentOrder.map((name) => {
+        const existing = nodes.find((node) => node.name === name);
+        if (existing) return existing;
+        return {
+          id: name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+          name,
+          useCase: defaultUseCases[name],
+          buyingLikelihood: 50,
+          arrPotential: 0,
+          status: "latent",
+          recommendedNextStep: "Map stakeholders",
+        };
+      }),
+    [nodes]
   );
+
+  const rankedNodes = useMemo(
+    () =>
+      [...normalizedNodes].sort((a, b) => {
+        const statusDiff = statusPriority[a.status] - statusPriority[b.status];
+        if (statusDiff !== 0) return statusDiff;
+        if (b.arrPotential !== a.arrPotential) return b.arrPotential - a.arrPotential;
+        if (b.buyingLikelihood !== a.buyingLikelihood) {
+          return b.buyingLikelihood - a.buyingLikelihood;
+        }
+        return a.name.localeCompare(b.name);
+      }),
+    [normalizedNodes]
+  );
+
+  const activeNodes = rankedNodes.filter((node) => activeStatuses.has(node.status));
+  const totalPotential = normalizedNodes.reduce((sum, node) => sum + node.arrPotential, 0);
+  const averageLikelihood = Math.round(
+    normalizedNodes.reduce((sum, node) => sum + node.buyingLikelihood, 0) / normalizedNodes.length
+  );
+  const focusNode = rankedNodes[0] ?? normalizedNodes[0];
+  const laneGroups = laneConfig.map((lane) => ({
+    ...lane,
+    nodes: lane.items(rankedNodes),
+  }));
 
   const expansionPitch = useStreaming();
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
@@ -132,99 +152,251 @@ export function OrgExpansionMap({ nodes, account, competitors }: OrgExpansionMap
       transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="space-y-10"
     >
-      <div className="flex items-end justify-between gap-6">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <SectionHeader
           title="Org expansion map"
-          subtitle={`${activeCount} departments active · $${totalPotential.toFixed(2)}M ARR potential`}
+          subtitle={`${activeNodes.length} departments in motion · $${totalPotential.toFixed(2)}M total expansion ARR potential`}
         />
-        {activeNodes.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="max-w-[46ch] text-right text-[12px] text-claude-coral/60"
-          >
-            {activeNodes.map((n) => n.name).join(" · ")}
-          </motion.div>
-        )}
+
+        <div className="flex flex-wrap gap-2">
+          {rankedNodes.slice(0, 3).map((node, index) => (
+            <div
+              key={node.id}
+              className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-[11px] text-text-secondary"
+            >
+              <span className="text-text-faint">#{index + 1}</span> {node.name}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[28px] border border-claude-coral/10 bg-gradient-to-br from-surface-elevated/85 via-surface/75 to-surface-elevated/85 px-8 py-10">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(218,119,86,0.08),transparent_45%),radial-gradient(circle_at_18%_18%,rgba(218,119,86,0.04),transparent_35%),radial-gradient(circle_at_86%_84%,rgba(218,119,86,0.03),transparent_30%)]" />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
+            Departments in motion
+          </p>
+          <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
+            {activeNodes.length}
+          </p>
+          <p className="mt-1 text-[12px] text-text-muted">
+            Pilot, deployed, or actively engaged teams.
+          </p>
+        </div>
 
-        <div className="relative h-[920px] w-full">
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="org-link-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(218,119,86,0.1)" />
-                <stop offset="50%" stopColor="rgba(218,119,86,0.35)" />
-                <stop offset="100%" stopColor="rgba(218,119,86,0.1)" />
-              </linearGradient>
-            </defs>
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
+            Expansion ARR
+          </p>
+          <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
+            ${totalPotential.toFixed(2)}M
+          </p>
+          <p className="mt-1 text-[12px] text-text-muted">
+            Full cross-functional upside across the account.
+          </p>
+        </div>
 
-            {connections.map(([from, to], idx) => {
-              const start = nodePositions[from];
-              const end = nodePositions[to];
-              const isActivated =
-                activeNodes.some((n) => n.name === from) || activeNodes.some((n) => n.name === to);
-              const controlY = Math.min(start.y, end.y) + Math.abs(start.y - end.y) * 0.35 - 8;
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
+            Avg. buying likelihood
+          </p>
+          <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
+            {averageLikelihood}%
+          </p>
+          <p className="mt-1 text-[12px] text-text-muted">
+            Average readiness across every mapped department.
+          </p>
+        </div>
 
-              return (
-                <motion.path
-                  key={`${from}-${to}`}
-                  d={`M ${start.x} ${start.y} Q ${(start.x + end.x) / 2} ${controlY} ${end.x} ${end.y}`}
-                  fill="none"
-                  stroke="url(#org-link-gradient)"
-                  strokeWidth={isActivated ? 0.48 : 0.25}
-                  strokeOpacity={isActivated ? 1 : 0.52}
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{
-                    pathLength: 1,
-                    opacity: isActivated ? [0.55, 1, 0.55] : [0.2, 0.45, 0.2],
-                  }}
-                  transition={{
-                    pathLength: { duration: 1.15, delay: idx * 0.05, ease: "easeOut" },
-                    opacity: {
-                      duration: isActivated ? 2.2 : 3.2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
-                  }}
-                />
-              );
-            })}
-          </svg>
+        <div className="rounded-[24px] border border-claude-coral/12 bg-claude-coral/[0.04] p-4">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-claude-coral/65">
+            Highest priority
+          </p>
+          <p className="mt-3 text-[18px] font-semibold tracking-tight text-text-primary">
+            {focusNode?.name ?? "No focus area"}
+          </p>
+          <p className="mt-1 text-[12px] text-text-muted">
+            {focusNode ? `${focusNode.buyingLikelihood}% likelihood · $${focusNode.arrPotential.toFixed(2)}M ARR` : "Prioritize the first internal wedge."}
+          </p>
+        </div>
+      </div>
 
-          {normalizedNodes.map((node, i) => {
-            const position = nodePositions[node.name as (typeof departmentOrder)[number]];
-            return (
-              <motion.div
-                key={node.id}
-                className="group absolute w-[288px] -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${position.x}%`, top: `${position.y}%` }}
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.45fr)_380px]">
+        <div className="space-y-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
+                Expansion lanes
+              </p>
+              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-text-muted">
+                The org view is now organized by motion instead of forcing every team into a noisy
+                diagram. This makes the sequence obvious: what is active now, what should be built
+                next, and what can wait.
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 text-[12px] text-claude-coral/70">
+              <TrendingUp className="h-3.5 w-3.5" strokeWidth={1.8} />
+              Expansion strategy, not org-chart spaghetti
+            </div>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            {laneGroups.map((lane, laneIndex) => (
+              <motion.section
+                key={lane.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: i * 0.03 }}
+                transition={{ delay: laneIndex * 0.06, duration: 0.4 }}
+                className={`rounded-[28px] border p-5 ${lane.className}`}
               >
-                <div className="relative">
-                  <OrgNodeCard node={node} index={i} />
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
+                      {lane.title}
+                    </p>
+                    <p className="mt-2 text-[12px] leading-relaxed text-text-muted">
+                      {lane.description}
+                    </p>
+                  </div>
+                  <div className="rounded-full border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-text-secondary">
+                    {lane.nodes.length}
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {lane.nodes.length > 0 ? (
+                    lane.nodes.map((node) => (
+                      <OrgNodeCard
+                        key={node.id}
+                        node={node}
+                        onGeneratePitch={() => generateExpansionPitch(node.name)}
+                      />
+                    ))
+                  ) : (
+                    <div className="rounded-[22px] border border-dashed border-white/8 bg-white/[0.02] px-4 py-5 text-[12px] leading-relaxed text-text-muted">
+                      {lane.emptyState}
+                    </div>
+                  )}
+                </div>
+              </motion.section>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-[30px] border border-claude-coral/12 bg-gradient-to-br from-claude-coral/[0.06] via-surface-elevated/70 to-surface/60 p-6">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-claude-coral/[0.12]">
+                <ClaudeSparkle size={14} className="text-claude-coral" />
+              </div>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-claude-coral/65">
+                  Expansion brief
+                </p>
+                <p className="text-[13px] font-medium text-text-primary">{account.name}</p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <p className="text-[12px] font-medium text-text-primary">Current thesis</p>
+              <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">
+                {account.firstWedge}
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <Users className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+                  <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-text-faint">
+                    Executive sponsors
+                  </p>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {account.executiveSponsors.slice(0, 3).map((sponsor) => (
+                    <div
+                      key={sponsor}
+                      className="rounded-2xl border border-white/5 bg-black/10 px-3 py-2 text-[12px] text-text-secondary"
+                    >
+                      {sponsor}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <CircleAlert className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+                  <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-text-faint">
+                    Key blockers
+                  </p>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {account.topBlockers.slice(0, 3).map((blocker) => (
+                    <div
+                      key={blocker}
+                      className="rounded-2xl border border-white/5 bg-black/10 px-3 py-2 text-[12px] leading-relaxed text-text-secondary"
+                    >
+                      {blocker}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-5">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
+                Best expansion paths
+              </p>
+            </div>
+            <div className="mt-4 space-y-3">
+              {account.topExpansionPaths.slice(0, 3).map((path, index) => (
+                <div
+                  key={path}
+                  className="rounded-[20px] border border-white/8 bg-black/10 px-4 py-3"
+                >
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.08em] text-text-faint">
+                    <span>Path {index + 1}</span>
+                    <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
+                  </div>
+                  <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">{path}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-5">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
+              Top opportunities
+            </p>
+            <div className="mt-4 space-y-3">
+              {rankedNodes.slice(0, 3).map((node, index) => (
+                <div
+                  key={node.id}
+                  className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-black/10 px-4 py-3"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-[11px] font-semibold text-text-secondary">
+                    {index + 1}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium text-text-primary">{node.name}</p>
+                    <p className="mt-0.5 text-[11px] text-text-muted">
+                      {node.buyingLikelihood}% likelihood · ${node.arrPotential.toFixed(2)}M ARR
+                    </p>
+                  </div>
                   <button
                     onClick={() => generateExpansionPitch(node.name)}
-                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-1.5 bg-claude-coral/10 border border-claude-coral/20 text-claude-coral/70 hover:bg-claude-coral/20"
-                    title={`Expansion pitch for ${node.name}`}
+                    className="rounded-full border border-claude-coral/15 bg-claude-coral/[0.08] p-2 text-claude-coral/80 transition-colors hover:bg-claude-coral/[0.14]"
+                    title={`Generate expansion pitch for ${node.name}`}
                   >
-                    <ClaudeSparkle size={10} />
+                    <ClaudeSparkle size={11} />
                   </button>
                 </div>
-              </motion.div>
-            );
-          })}
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
