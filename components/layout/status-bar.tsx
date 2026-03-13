@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ClaudeSparkle } from "@/components/ui/claude-logo";
 import { useTheme } from "@/app/context/theme-context";
 import type { Account } from "@/types";
+import type { DealHealthSummary } from "@/lib/deal-health";
 
 interface StatusBarProps {
   account: Account;
@@ -29,6 +30,7 @@ interface StatusBarProps {
   signalCount: number;
   pendingDecisions: number;
   oversightStatus: "active" | "idle";
+  dealHealth?: DealHealthSummary;
   onOpenChat?: () => void;
   onOpenMobileNav: () => void;
   sidebarCollapsed: boolean;
@@ -45,6 +47,7 @@ export function StatusBar({
   signalCount,
   pendingDecisions,
   oversightStatus,
+  dealHealth,
   onOpenChat,
   onOpenMobileNav,
   sidebarCollapsed,
@@ -185,6 +188,20 @@ export function StatusBar({
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-[12px]">
+            {dealHealth && (
+              <span
+                className={`font-medium ${
+                  dealHealth.status === "healthy"
+                    ? "text-emerald-400/90"
+                    : dealHealth.status === "attention"
+                      ? "text-amber-400/90"
+                      : "text-rose-400/90"
+                }`}
+                title={dealHealth.reason}
+              >
+                {dealHealth.label}
+              </span>
+            )}
             <span className="text-text-muted">
               <span className="tabular-nums text-text-primary">${pipelineTarget.toFixed(2)}M</span>
               {" "}in play

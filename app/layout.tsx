@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ApiKeyProvider } from "@/app/context/api-key-context";
 import { ThemeProvider } from "@/app/context/theme-context";
+import { ToastProvider } from "@/app/context/toast-context";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -56,7 +57,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider>
-          <ApiKeyProvider>{children}</ApiKeyProvider>
+          <ApiKeyProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ApiKeyProvider>
         </ThemeProvider>
       </body>
     </html>

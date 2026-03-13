@@ -12,6 +12,7 @@ import {
   buildWorkspaceDraft,
   getCurrentPhaseLabel,
 } from "@/data/account-ops";
+import { getDealHealth, type DealHealthSummary } from "@/lib/deal-health";
 import type {
   Account,
   Agent,
@@ -43,6 +44,7 @@ interface AppContextValue extends AppState {
   competitors: ReturnType<typeof getCompetitorsByAccount>;
   pendingDecisionCount: number;
   lastDecisionTitle: string | null;
+  dealHealth: DealHealthSummary;
   setAccountId: (id: string) => void;
   clearLastDecision: () => void;
   handleApproveDecision: (itemId: string) => void;
@@ -313,6 +315,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ).length;
   const pipelineTarget = account.estimatedLandValue + account.estimatedExpansionValue * 0.4;
   const currentRecommendation = signals[0]?.recommendedAction ?? `Proceed with ${account.firstWedge}.`;
+  const dealHealth = useMemo(
+    () => getDealHealth(executionItems, accountUpdates, stakeholders),
+    [executionItems, accountUpdates, stakeholders]
+  );
 
   const value: AppContextValue = {
     accountId,
@@ -330,6 +336,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     competitors,
     pendingDecisionCount,
     lastDecisionTitle,
+    dealHealth,
     setAccountId,
     clearLastDecision,
     handleApproveDecision,

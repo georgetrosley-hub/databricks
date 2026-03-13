@@ -30,6 +30,7 @@ function MainContent() {
     pipelineTarget,
     currentPhase,
     pendingDecisionCount,
+    dealHealth,
     setAccountId,
     lastDecisionTitle,
     clearLastDecision,
@@ -72,6 +73,7 @@ function MainContent() {
         workspaceDraft={workspaceDraft}
         pipelineTarget={pipelineTarget}
         currentRecommendation={currentRecommendation}
+        dealHealth={dealHealth}
         onUpdateWorkspaceField={updateWorkspaceField}
         onAddAccountUpdate={addAccountUpdate}
       />
@@ -136,6 +138,7 @@ function MainContent() {
           signalCount={signals.length}
           pendingDecisions={pendingDecisionCount}
           oversightStatus={oversightStatus}
+          dealHealth={dealHealth}
           onOpenChat={handleOpenChat}
           onOpenMobileNav={() => setMobileNavOpen(true)}
           sidebarCollapsed={sidebarCollapsed}

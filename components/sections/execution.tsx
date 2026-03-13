@@ -6,6 +6,8 @@ import { Check, Clock3, PauseCircle, PlayCircle, ShieldCheck } from "lucide-reac
 import { ClaudeActionBar } from "@/components/ui/claude-action-bar";
 import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/app/context/toast-context";
+import { isStale } from "@/lib/deal-health";
 import type { Account, Competitor, ExecutionItem } from "@/types";
 
 interface ExecutionProps {
@@ -39,9 +41,20 @@ export function Execution({
   onDeferDecision,
   onUpdateExecutionStatus,
 }: ExecutionProps) {
+  const { showToast } = useToast();
   const pendingDecisions = executionItems.filter(
     (item) => item.decisionRequired && item.decisionStatus === "pending"
   );
+
+  const handleApprove = (itemId: string) => {
+    onApproveDecision(itemId);
+    showToast("Decision recorded");
+  };
+
+  const handleDefer = (itemId: string) => {
+    onDeferDecision(itemId);
+    showToast("Deferred");
+  };
 
   useEffect(() => {
     if (!lastDecisionTitle) {
@@ -144,13 +157,13 @@ export function Execution({
                 )}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
-                    onClick={() => onApproveDecision(item.id)}
+                    onClick={() => handleApprove(item.id)}
                     className="rounded-full border border-claude-coral/20 bg-claude-coral/[0.10] px-3 py-1.5 text-[12px] font-medium text-claude-coral"
                   >
                     Approve
                   </button>
                   <button
-                    onClick={() => onDeferDecision(item.id)}
+                    onClick={() => handleDefer(item.id)}
                     className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-text-secondary"
                   >
                     Defer
@@ -196,9 +209,16 @@ export function Execution({
               </div>
               <div className="rounded-[20px] border border-white/8 bg-black/10 px-4 py-4">
                 <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Last updated</p>
-                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                  {item.lastUpdated}
-                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <p className="text-[13px] leading-relaxed text-text-secondary">
+                    {item.lastUpdated}
+                  </p>
+                  {isStale(item.lastUpdated) && (
+                    <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400/90">
+                      Stale
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             {item.blockerDetail && (

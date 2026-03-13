@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users } from "lucide-react";
+import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users, Eye, CircleDot } from "lucide-react";
 import { ClaudeActionBar } from "@/components/ui/claude-action-bar";
 import { SectionHeader } from "@/components/ui/section-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { ClaudeSparkle } from "@/components/ui/claude-logo";
 import { getFlagshipDealContext } from "@/data/flagship-deals";
+import { useToast } from "@/app/context/toast-context";
+import { isStale, isStaleUpdate } from "@/lib/deal-health";
 import type {
   Account,
   AccountSignal,
@@ -17,6 +19,7 @@ import type {
   Stakeholder,
   WorkspaceDraft,
 } from "@/types";
+import type { DealHealthSummary } from "@/lib/deal-health";
 
 function getTodayLabel() {
   const d = new Date();
@@ -35,6 +38,7 @@ interface OverviewProps {
   workspaceDraft: WorkspaceDraft;
   pipelineTarget: number;
   currentRecommendation: string;
+  dealHealth: DealHealthSummary;
   onUpdateWorkspaceField: (field: keyof WorkspaceDraft, value: string) => void;
   onAddAccountUpdate: (
     title: string,
@@ -53,12 +57,27 @@ export function Overview({
   workspaceDraft,
   pipelineTarget,
   currentRecommendation,
+  dealHealth,
   onUpdateWorkspaceField,
   onAddAccountUpdate,
 }: OverviewProps) {
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateNote, setUpdateNote] = useState("");
   const [updateTag, setUpdateTag] = useState<AccountUpdate["tag"]>("internal");
+  const saveToastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { showToast } = useToast();
+
+  const handleWorkspaceFieldChange = useCallback(
+    (field: keyof WorkspaceDraft, value: string) => {
+      onUpdateWorkspaceField(field, value);
+      if (saveToastRef.current) clearTimeout(saveToastRef.current);
+      saveToastRef.current = setTimeout(() => {
+        showToast("Saved");
+        saveToastRef.current = null;
+      }, 600);
+    },
+    [onUpdateWorkspaceField, showToast]
+  );
   const topCompetitor = [...competitors].sort((a, b) => b.accountRiskLevel - a.accountRiskLevel)[0];
   const champion = stakeholders.find((stakeholder) => stakeholder.stance === "champion");
   const championCount = stakeholders.filter((stakeholder) => stakeholder.stance === "champion" || stakeholder.stance === "ally").length;
@@ -73,12 +92,19 @@ export function Overview({
     setUpdateTitle("");
     setUpdateNote("");
     setUpdateTag("internal");
+    showToast("Update added");
   };
 
   const todayLabel = useMemo(() => getTodayLabel(), []);
   const topPriority = executionItems.find((i) => i.status === "blocked") ?? executionItems.find((i) => i.status === "in_progress");
   const lastUpdate = accountUpdates[0];
   const flagshipDeal = useMemo(() => getFlagshipDealContext(account.id), [account.id]);
+
+  const blockedItems = executionItems.filter((i) => i.status === "blocked");
+  const needsAttention = executionItems.filter(
+    (i) => i.decisionRequired && i.decisionStatus === "pending"
+  );
+  const staleItems = executionItems.filter((i) => isStale(i.lastUpdated));
 
   return (
     <motion.div
@@ -87,43 +113,92 @@ export function Overview({
       transition={{ duration: 0.45 }}
       className="space-y-10 sm:space-y-12"
     >
-      {/* Daily operator workspace — where the AE lives */}
-      <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
-        <div>
+      {/* VP oversight — 30-second scan for Ryan */}
+      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6">
+        <div className="flex items-center gap-2">
+          <Eye className="h-4 w-4 text-text-faint" strokeWidth={1.8} />
           <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">
-            {todayLabel} · {account.name}
+            VP oversight · At a glance
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
-            Today&apos;s workspace
-          </h1>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <div
+            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-medium ${
+              dealHealth.status === "healthy"
+                ? "bg-emerald-500/10 text-emerald-400/90"
+                : dealHealth.status === "attention"
+                  ? "bg-amber-500/10 text-amber-400/90"
+                  : "bg-rose-500/10 text-rose-400/90"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                dealHealth.status === "healthy"
+                  ? "bg-emerald-400"
+                  : dealHealth.status === "attention"
+                    ? "bg-amber-400"
+                    : "bg-rose-400"
+              }`}
+            />
+            {dealHealth.label}
+          </div>
+          {blockedItems.length > 0 && (
+            <div className="flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1.5 text-[12px] font-medium text-amber-400/90">
+              <CircleDot className="h-3.5 w-3.5" />
+              {blockedItems.length} blocker{blockedItems.length === 1 ? "" : "s"}
+            </div>
+          )}
+          {needsAttention.length > 0 && (
+            <div className="flex items-center gap-2 rounded-full bg-claude-coral/10 px-3 py-1.5 text-[12px] font-medium text-claude-coral/90">
+              {needsAttention.length} decision{needsAttention.length === 1 ? "" : "s"} pending
+            </div>
+          )}
+          {staleItems.length > 0 && (
+            <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 text-[12px] text-text-muted">
+              {staleItems.length} stale
+            </div>
+          )}
+        </div>
+        <p className="mt-3 text-[12px] text-text-muted">{dealHealth.reason}</p>
+      </section>
+
+      {/* Today's workspace — compact status strip */}
+      <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">
+              {todayLabel} · {account.name}
+            </p>
+            <h1 className="mt-0.5 text-lg font-semibold tracking-tight text-text-primary sm:text-xl">
+              Today&apos;s workspace
+            </h1>
+          </div>
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-3">
-          <div className="flex flex-col">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">This week</p>
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
+          <div className="min-w-0 flex-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-faint">This week</p>
             <textarea
               value={workspaceDraft.thisWeekFocus}
-              onChange={(e) => onUpdateWorkspaceField("thisWeekFocus", e.target.value)}
+              onChange={(e) => handleWorkspaceFieldChange("thisWeekFocus", e.target.value)}
               placeholder="Lock the pilot sponsor, define success criteria, and schedule the governance workstream."
-              rows={3}
-              className="mt-3 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[14px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none focus:ring-1 focus:ring-claude-coral/20"
+              rows={2}
+              className="mt-2 w-full resize-none border-none bg-transparent p-0 text-[14px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:ring-0"
             />
           </div>
-          <div className="flex flex-col">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">Where I left off</p>
-            <p className="mt-3 text-[15px] font-medium text-text-primary">
+          <div className="flex shrink-0 flex-col justify-center border-t border-white/[0.06] pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-faint">Where I left off</p>
+            <p className="mt-1.5 text-[14px] font-medium text-text-primary">
               {lastUpdate?.title ?? "Daily account reset"}
             </p>
-            <p className="mt-1 text-[13px] text-text-muted">
-              {lastUpdate?.createdAt ?? "Today"}
-            </p>
+            <p className="mt-0.5 text-[12px] text-text-muted">{lastUpdate?.createdAt ?? "Today"}</p>
           </div>
-          <div className="flex flex-col">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">Today&apos;s priority</p>
-            <p className="mt-3 text-[15px] font-medium text-text-primary">
+          <div className="flex shrink-0 flex-col justify-center border-t border-white/[0.06] pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-faint">Today&apos;s priority</p>
+            <p className="mt-1.5 text-[14px] font-medium text-text-primary">
               {topPriority?.title ?? "Define the first pilot"}
             </p>
-            <p className="mt-1 text-[13px] text-text-muted">
+            <p className="mt-0.5 text-[12px] text-text-muted">
               {topPriority?.owner ?? champion?.name} · {topPriority?.dueLabel ?? "This week"}
             </p>
           </div>
@@ -339,7 +414,7 @@ export function Overview({
               </label>
               <textarea
                 value={workspaceDraft.dealThesis}
-                onChange={(event) => onUpdateWorkspaceField("dealThesis", event.target.value)}
+                onChange={(event) => handleWorkspaceFieldChange("dealThesis", event.target.value)}
                 rows={3}
                 className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
@@ -351,7 +426,7 @@ export function Overview({
               </label>
               <textarea
                 value={workspaceDraft.winTheme}
-                onChange={(event) => onUpdateWorkspaceField("winTheme", event.target.value)}
+                onChange={(event) => handleWorkspaceFieldChange("winTheme", event.target.value)}
                 rows={3}
                 className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
@@ -363,7 +438,7 @@ export function Overview({
               </label>
               <textarea
                 value={workspaceDraft.thisWeekFocus}
-                onChange={(event) => onUpdateWorkspaceField("thisWeekFocus", event.target.value)}
+                onChange={(event) => handleWorkspaceFieldChange("thisWeekFocus", event.target.value)}
                 rows={2}
                 className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
@@ -375,7 +450,7 @@ export function Overview({
               </label>
               <textarea
                 value={workspaceDraft.operatorNotes}
-                onChange={(event) => onUpdateWorkspaceField("operatorNotes", event.target.value)}
+                onChange={(event) => handleWorkspaceFieldChange("operatorNotes", event.target.value)}
                 rows={4}
                 className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
@@ -432,6 +507,11 @@ export function Overview({
                   <span className="text-[11px] text-text-faint">
                     {update.createdAt} · {update.author}
                   </span>
+                  {isStaleUpdate(update.createdAt) && (
+                    <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400/90">
+                      Stale
+                    </span>
+                  )}
                 </div>
                 <p className="mt-3 text-[14px] font-medium text-text-primary">
                   {update.title}
