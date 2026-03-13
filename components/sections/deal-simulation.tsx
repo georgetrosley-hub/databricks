@@ -79,8 +79,8 @@ export function DealSimulation({ accounts, competitors }: DealSimulationProps) {
     const ctx = {
       account,
       entryPoint: entryPoint || account.firstWedge,
-      champion: champion || champions[0]?.value ?? "VP Data Platform",
-      incumbent: incumbent || incumbents[0]?.value ?? "—",
+      champion: (champion || champions[0]?.value) ?? "VP Data Platform",
+      incumbent: (incumbent || incumbents[0]?.value) ?? "—",
     };
 
     stream.startStream({
