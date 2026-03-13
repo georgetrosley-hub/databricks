@@ -1,3 +1,4 @@
+import { getFlagshipDealContext } from "@/data/flagship-deals";
 import type {
   Account,
   AccountSignal,
@@ -111,6 +112,13 @@ function getSecondSponsor(account: Account) {
 }
 
 function getLastTouchLabel(account: Account) {
+  const flagship = getFlagshipDealContext(account.id);
+  if (account.id === "jpmorgan" && flagship)
+    return `Call with ${flagship.championName} · Mon 09:30`;
+  if (account.id === "comcast" && flagship)
+    return `Call with ${flagship.championName} · Tue 14:00`;
+  if (account.id === "pfizer" && flagship)
+    return `Call with ${flagship.championName} · Wed 11:15`;
   if (account.id === "jpmorgan") return "Model risk intro call · Mon 09:30";
   if (account.id === "comcast") return "Platform follow-up · Tue 14:00";
   if (account.id === "pfizer") return "Medical affairs prep note · Wed 11:15";
@@ -241,6 +249,9 @@ export function buildAccountSignals(
 
 export function buildStakeholders(account: Account): Stakeholder[] {
   const champion = getChampionProfile(account);
+  const flagship = getFlagshipDealContext(account.id);
+  const championName = flagship?.championName ?? champion.name;
+  const championTitle = flagship?.championTitle ?? champion.title;
   const sponsors = account.executiveSponsors.map(parseSponsor);
   const primarySponsor = sponsors[0] ?? { name: "Executive sponsor", title: "Executive sponsor" };
   const secondarySponsor = sponsors[1] ?? primarySponsor;
@@ -248,14 +259,14 @@ export function buildStakeholders(account: Account): Stakeholder[] {
   return [
     {
       id: `${account.id}-champion`,
-      name: champion.name,
-      title: champion.title,
+      name: championName,
+      title: championTitle,
       team: champion.team,
       stance: "champion",
       influence: "high",
       relationshipStrength: 78,
       nextStep: "Turn the wedge into a measurable pilot with named success criteria.",
-      note: champion.note,
+      note: flagship?.lastCallSummary ?? champion.note,
       lastTouch: getLastTouchLabel(account),
       proofNeeded: "A pilot scope the champion can defend internally with clear success criteria.",
       recentMoment: getRecentMoment(account),
@@ -449,14 +460,16 @@ export function buildAccountUpdates(account: Account): AccountUpdate[] {
     },
   ];
 
-  if (account.id === "jpmorgan") {
+  const flagship = getFlagshipDealContext(account.id);
+
+  if (account.id === "jpmorgan" && flagship) {
     return [
       {
         id: `${account.id}-specific-1`,
         createdAt: "Today · 07:55",
         author: "George",
-        title: "Model risk path looks real",
-        note: "This account gets more interesting when we frame governance as the reason to buy Claude, not the reason to wait. The wedge still looks strongest in model risk documentation and review.",
+        title: "Marcus aligned on pilot scope",
+        note: `${flagship.championName} is bought in. Security review is the gating item — they want a written deployment narrative and data-flow diagram before the Mar 18 meeting. Legal is watching but won't block if Model Risk and Security are comfortable.`,
         tag: "call",
       },
       {
@@ -464,21 +477,21 @@ export function buildAccountUpdates(account: Account): AccountUpdate[] {
         createdAt: "Yesterday · 16:10",
         author: "George",
         title: "Need a tighter sponsor ask",
-        note: `Before I bring ${sponsor.name} deeper in, I need a crisp internal brief that explains why this pilot is small, governable, and worth executive attention.`,
+        note: `Before I bring ${sponsor.name} deeper in, I need a crisp internal brief that explains why this pilot is small, governable, and worth executive attention. Microsoft EA renewal risk is real — need to land before procurement folds us into a bundle.`,
         tag: "exec",
       },
       ...baseUpdates,
     ];
   }
 
-  if (account.id === "comcast") {
+  if (account.id === "comcast" && flagship) {
     return [
       {
         id: `${account.id}-specific-1`,
         createdAt: "Today · 09:05",
         author: "George",
-        title: "Platform team is the cleanest opening",
-        note: "Developer productivity still feels like the easiest story to get through internal review, but only if the pilot stays tight and security gets answers early.",
+        title: "Jennifer ready, Security is the blocker",
+        note: `${flagship.championName} is ready to go. Security wants a written deployment narrative and answers on data flow before the Mar 22 review. Platform team is eager; we need to unblock Security quickly. Microsoft EA renewal in Q3 — need to land pilot before that conversation.`,
         tag: "call",
       },
       {
@@ -486,21 +499,21 @@ export function buildAccountUpdates(account: Account): AccountUpdate[] {
         createdAt: "Yesterday · 15:25",
         author: "George",
         title: "Expansion should stay in the background",
-        note: `Support automation is the likely second act, but I should not oversell expansion before the platform pilot has a real owner and success metrics.`,
+        note: "Support automation is the likely second act, but I should not oversell expansion before the platform pilot has a real owner and success metrics.",
         tag: "next_step",
       },
       ...baseUpdates,
     ];
   }
 
-  if (account.id === "pfizer") {
+  if (account.id === "pfizer" && flagship) {
     return [
       {
         id: `${account.id}-specific-1`,
         createdAt: "Today · 08:45",
         author: "George",
-        title: "Regulated workflow angle is resonating",
-        note: "The R&D / document workflow story is strong, but legal and validation will want a much more explicit deployment narrative before they buy into a pilot.",
+        title: "Elena bought in, Legal wants more",
+        note: `${flagship.championName} is aligned. Regulated workflow angle resonates. Legal and validation want a much more explicit deployment narrative before they sign off. Next step: package the security and governance response so a regulated buyer can forward it internally.`,
         tag: "call",
       },
       {
@@ -508,7 +521,7 @@ export function buildAccountUpdates(account: Account): AccountUpdate[] {
         createdAt: "Yesterday · 14:50",
         author: "George",
         title: "Need a better proof package",
-        note: "Next step is to package the security and governance response in a way a regulated buyer can forward internally without translating it.",
+        note: "Package the security and governance response in a way a regulated buyer can forward internally without translating it. GxP is a red herring for the pilot — we're not touching validated systems.",
         tag: "risk",
       },
       ...baseUpdates,

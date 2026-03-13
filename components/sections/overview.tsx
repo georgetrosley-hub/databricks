@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users } from "lucide-react";
+import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users, Calendar, Zap } from "lucide-react";
 import { ClaudeActionBar } from "@/components/ui/claude-action-bar";
 import { SectionHeader } from "@/components/ui/section-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { ClaudeSparkle } from "@/components/ui/claude-logo";
+import { getFlagshipDealContext } from "@/data/flagship-deals";
 import type {
   Account,
   AccountSignal,
@@ -16,6 +17,13 @@ import type {
   Stakeholder,
   WorkspaceDraft,
 } from "@/types";
+
+function getTodayLabel() {
+  const d = new Date();
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
 
 interface OverviewProps {
   account: Account;
@@ -67,6 +75,11 @@ export function Overview({
     setUpdateTag("internal");
   };
 
+  const todayLabel = useMemo(() => getTodayLabel(), []);
+  const topPriority = executionItems.find((i) => i.status === "blocked") ?? executionItems.find((i) => i.status === "in_progress");
+  const lastUpdate = accountUpdates[0];
+  const flagshipDeal = useMemo(() => getFlagshipDealContext(account.id), [account.id]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -74,21 +87,78 @@ export function Overview({
       transition={{ duration: 0.45 }}
       className="space-y-10 sm:space-y-12"
     >
+      {/* Daily operator workspace — where the AE lives */}
+      <section className="rounded-[28px] border border-claude-coral/12 bg-claude-coral/[0.04] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-claude-coral/80" strokeWidth={1.8} />
+            <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-claude-coral/80">
+              {todayLabel}
+            </span>
+          </div>
+          <span className="text-text-faint">·</span>
+          <span className="text-[11px] text-text-faint">
+            George Trosley · War Room · {account.name}
+          </span>
+        </div>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+          Today&apos;s workspace
+        </h1>
+        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-text-secondary">
+          Where I left off, what I&apos;m focused on this week, and the next move I need to make.
+        </p>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">This week</p>
+            </div>
+            <textarea
+              value={workspaceDraft.thisWeekFocus}
+              onChange={(e) => onUpdateWorkspaceField("thisWeekFocus", e.target.value)}
+              placeholder="Lock the pilot sponsor, define success criteria, and schedule the governance workstream."
+              rows={2}
+              className="mt-3 w-full resize-none rounded-[14px] border border-white/8 bg-black/20 px-3 py-2 text-[14px] leading-relaxed text-text-primary placeholder:text-text-muted/60 focus:border-claude-coral/25 focus:outline-none"
+            />
+          </div>
+          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
+            <div className="flex items-center gap-2">
+              <ArrowRight className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Where I left off</p>
+            </div>
+            <p className="mt-3 text-[14px] font-medium text-text-primary">
+              {lastUpdate?.title ?? "Daily account reset"}
+            </p>
+            <p className="mt-1 text-[12px] text-text-muted">
+              {lastUpdate?.createdAt ?? "Today"}
+            </p>
+          </div>
+          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
+            <div className="flex items-center gap-2">
+              <Crosshair className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
+              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Today&apos;s priority</p>
+            </div>
+            <p className="mt-3 text-[14px] font-medium text-text-primary">
+              {topPriority?.title ?? "Define the first pilot"}
+            </p>
+            <p className="mt-1 text-[12px] text-text-muted">
+              {topPriority?.owner ?? champion?.name} · {topPriority?.dueLabel ?? "This week"}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="space-y-4">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-text-faint">
-          George Trosley · Enterprise GTM Artifact
+          Capture plan · {account.name}
         </p>
-        <div className="max-w-4xl space-y-3">
-          <h1 className="max-w-5xl text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl lg:text-5xl">
+        <div className="max-w-4xl space-y-2">
+          <h2 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
             How I&apos;d build pipeline and expansion for Claude Enterprise inside {account.name}
-          </h1>
-          <p className="max-w-3xl text-[16px] leading-relaxed text-text-secondary sm:text-[18px]">
-            This prototype is meant to show how I think about creating demand, landing a controlled first pilot,
-            navigating security and procurement, and expanding Claude inside large enterprise accounts.
-          </p>
+          </h2>
           <p className="max-w-3xl text-[14px] leading-relaxed text-text-muted">
-            The point is not AI future messaging. The point is deal mechanics: first wedge, champion path,
-            pilot design, executive alignment, competitive displacement, and the expansion story that follows.
+            First wedge, champion path, pilot design, executive alignment, competitive displacement, and the expansion story.
           </p>
         </div>
       </section>
@@ -199,6 +269,81 @@ export function Overview({
           </div>
         </aside>
       </div>
+
+      {flagshipDeal && (
+        <section className="rounded-[28px] border border-claude-coral/12 bg-claude-coral/[0.03] p-5 sm:p-6">
+          <SectionHeader
+            title="Deal progress"
+            subtitle={`Named champion, pilot criteria, and competitive battle for ${account.name}.`}
+          />
+          <div className="mt-6 grid gap-6 xl:grid-cols-3">
+            <div className="xl:col-span-2 space-y-6">
+              <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Champion</p>
+                <p className="mt-2 text-[15px] font-medium text-text-primary">
+                  {flagshipDeal.championName} · {flagshipDeal.championTitle}
+                </p>
+                {flagshipDeal.lastCallSummary && (
+                  <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+                    {flagshipDeal.lastCallSummary}
+                  </p>
+                )}
+              </div>
+              <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Pilot criteria</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+                  {flagshipDeal.pilotCriteria.scope}
+                </p>
+                <ul className="mt-3 space-y-1 text-[12px] text-text-muted">
+                  {flagshipDeal.pilotCriteria.successMetrics.map((m, i) => (
+                    <li key={i}>• {m}</li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-[12px] text-text-faint">
+                  {flagshipDeal.pilotCriteria.timeline} · Owner: {flagshipDeal.pilotCriteria.owner}
+                </p>
+              </div>
+              <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Competitive battle</p>
+                <p className="mt-2 text-[13px] font-medium text-text-primary">
+                  Incumbent: {flagshipDeal.competitiveBattle.incumbent}
+                </p>
+                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+                  {flagshipDeal.competitiveBattle.displacementStrategy}
+                </p>
+                <p className="mt-3 text-[12px] text-claude-coral/80">
+                  Win condition: {flagshipDeal.competitiveBattle.winCondition}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Deal milestones</p>
+              <div className="mt-4 space-y-3">
+                {flagshipDeal.milestones.map((m, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <span
+                      className={`shrink-0 mt-0.5 h-2 w-2 rounded-full ${
+                        m.status === "done"
+                          ? "bg-emerald-500/80"
+                          : m.status === "in_progress"
+                            ? "bg-claude-coral/80"
+                            : "bg-white/30"
+                      }`}
+                    />
+                    <div>
+                      <p className="text-[13px] font-medium text-text-primary">{m.label}</p>
+                      <p className="text-[11px] text-text-muted">
+                        {m.date}
+                        {m.owner ? ` · ${m.owner}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <section className="rounded-[28px] border border-white/8 bg-white/[0.03] p-5 sm:p-6">
