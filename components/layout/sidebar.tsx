@@ -17,18 +17,18 @@ import {
 
 const sectionGroups = [
   {
-    label: "Workspace",
+    label: "Deal Strategy",
     items: [
-      { id: "overview", label: "Overview", icon: LayoutDashboard },
-      { id: "stakeholders", label: "Stakeholders", icon: Users },
-      { id: "execution", label: "Execution", icon: Workflow },
+      { id: "overview", label: "Capture Plan", icon: LayoutDashboard },
+      { id: "stakeholders", label: "Stakeholder Map", icon: Users },
+      { id: "execution", label: "Deal Plan", icon: Workflow },
     ],
   },
   {
-    label: "Intelligence",
+    label: "Field Work",
     items: [
-      { id: "signals", label: "Signals", icon: Radar },
-      { id: "artifacts", label: "Artifacts", icon: FileText },
+      { id: "signals", label: "Deal Signals", icon: Radar },
+      { id: "artifacts", label: "Field Kit", icon: FileText },
     ],
   },
 ] as const;
@@ -82,7 +82,7 @@ function SidebarBody({
                   Claude
                 </h1>
                 <p className="text-[11px] text-text-muted">
-                  Account OS
+                  Enterprise GTM
                 </p>
               </div>
             )}

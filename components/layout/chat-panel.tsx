@@ -180,7 +180,7 @@ export function ChatPanel({
               <div className="flex min-w-0 items-center gap-2">
                 <ClaudeSparkle size={14} className="text-claude-coral" />
                 <span className="truncate text-[13px] font-medium text-text-primary">
-                  Claude Workspace
+                  Claude Deal Desk
                 </span>
                 <span className="hidden rounded-full bg-surface-muted/60 px-2 py-0.5 text-[10px] text-text-muted sm:inline-flex">
                   {account.name}
@@ -219,11 +219,11 @@ export function ChatPanel({
                     className="text-claude-coral/30 mb-4"
                   />
                   <p className="text-[14px] font-medium text-text-secondary mb-2">
-                    Your account workspace
+                    Your deal desk
                   </p>
                   <p className="text-[12px] text-text-muted leading-relaxed mb-6">
-                    I have context on {account.name}. Ask for next steps, stakeholder strategy,
-                    executive framing, or help building an artifact.
+                    I have context on {account.name}. Ask about pipeline creation, champion strategy,
+                    pilot design, competitive displacement, or next-step messaging.
                   </p>
                   {!hasApiKey && (
                     <div className="mb-6 rounded-lg border border-claude-coral/20 bg-claude-coral/[0.06] px-3 py-2 text-[11px] text-claude-coral/85">
@@ -232,10 +232,10 @@ export function ChatPanel({
                   )}
                   <div className="space-y-2 w-full">
                     {[
-                      `What changed this week for ${account.name}?`,
-                      `Who should I multi-thread next at ${account.name}?`,
-                      "How should I frame the security review?",
-                      "Generate a sharper executive brief for leadership",
+                      `How would you land the first pilot at ${account.name}?`,
+                      `Who is the best likely champion path at ${account.name}?`,
+                      "How would you handle the security review and procurement path?",
+                      "Write the internal brief I should use with leadership",
                     ].map((suggestion) => (
                       <button
                         key={suggestion}

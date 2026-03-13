@@ -187,16 +187,16 @@ export function StatusBar({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-[12px]">
             <span className="text-text-muted">
               <span className="tabular-nums text-text-primary">${pipelineTarget.toFixed(2)}M</span>
-              {" "}pipeline
+              {" "}modeled pipeline
             </span>
             <span className="text-text-muted">
               <span className="tabular-nums text-claude-coral/90">${estimatedArr.toFixed(2)}M</span>
-              {" "}ARR
+              {" "}modeled ARR
             </span>
             <span className="hidden text-text-muted md:inline">{currentPhase}</span>
             <span className="text-text-muted">
               <span className="tabular-nums text-text-secondary">{signalCount}</span>
-              {" "}signals
+              {" "}hypotheses
             </span>
           </div>
         </div>
@@ -209,7 +209,7 @@ export function StatusBar({
               <div>
                 <p className="text-[13px] font-medium text-text-primary">Claude API Key</p>
                 <p className="mt-1 text-[11px] text-text-muted">
-                  Demo-only local key storage for content generation in this workspace.
+                  Demo-only local key storage for generating deal materials in this artifact.
                 </p>
               </div>
               <button

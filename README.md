@@ -1,28 +1,30 @@
-# Claude Enterprise Expansion Engine
+# How I'd Build Pipeline and Expansion for Claude Enterprise
 
-A prototype of what Claude-powered enterprise GTM could look like: agent-assisted discovery, competitive intel, and human oversight—not automation that replaces the rep.
+This project is a GTM artifact, not a product marketing exercise.
 
-## What this is
+It is meant to show how I think about large enterprise Claude deals:
+- how I would create a credible first wedge
+- how I would build a champion path
+- how I would design the initial pilot
+- how I would handle security, procurement, and executive alignment
+- how I would map the expansion motion after the first win
 
-Nine specialized agents (Territory Intelligence, Research, Competitive Strategy, Technical Architecture, Security & Compliance, Legal & Procurement, Executive Narrative, Expansion Strategy, Human Oversight) work in the background to surface signals, recommendations, and approvals. The AE stays in control: approve, modify, or reject.
+## What the artifact includes
 
-- **Command Center** — Account overview, land/expansion metrics, pipeline forecast, and a live recommendation
-- **Agent Activity** — Real-time stream of events (champions identified, blockers, competitor pressure)
-- **Approval Queue** — Human-in-the-loop for high-impact decisions
-- **Competitive Intel** — Account-specific competitor risk and positioning
-- **Architecture** — Deployment readiness and integration planning
-- **Org Expansion Map** — Department-level expansion paths and ARR potential
-- **Deal Timeline** — Stage progression and projected value
-- **Exec Narrative** — Account-level story (why now, why Claude, next meeting)
+- **Capture Plan** — The core account thesis, the first wedge, the pilot logic, and the competitive displacement plan
+- **Stakeholder Map** — Who I would build with, where I would expect friction, and how I would multi-thread the deal
+- **Deal Plan** — The sequence I would run: land, governance, exec alignment, commercial path, expansion
+- **Deal Signals** — The working hypotheses I would pressure-test in discovery and deal execution
+- **Field Kit** — The actual materials I would use to move the deal: executive briefs, meeting prep, emails, objection talk tracks, security responses, and battle cards
 
-Today this runs on **deterministic simulation** (no backend, no API). The thesis: with the Claude API and real data (CRM, calls, documents), these agents could power a true enterprise sales command center.
+Today this is still a **prototype**. Some of the account logic is modeled from account metadata rather than pulled from real systems. The point is to show GTM judgment and operating style, with Claude used as an assistive layer for deal execution.
 
 ## What I'd build next
 
-1. **Claude API integration** — Replace simulation with live reasoning. Agents pull real account signals from CRM, call summaries, and documents.
-2. **Pipeline sync** — Connect to Salesforce/HubSpot. Auto-enrich deals with org structure, competitive intel, and risk scores.
-3. **Governance & audit trail** — Every agent action logged. Human-in-the-loop preserved. Compliance-ready for regulated industries.
-4. **Executive briefing mode** — One-click synthesis for QBRs and exec sponsor calls.
+1. **Real account inputs** — Pull from Salesforce, call notes, security questionnaires, and meeting summaries so the hypotheses become source-backed.
+2. **Better stakeholder memory** — Track real champions, blockers, and sponsor movement across time instead of deriving them from account profiles.
+3. **Pilot and expansion proof** — Add explicit success criteria, owner tracking, and post-pilot expansion logic tied to live account activity.
+4. **Production deployment** — Move away from local demo key handling and into a proper authenticated enterprise workflow.
 
 ## Run it
 
@@ -31,11 +33,11 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Switch accounts (JPMorgan, Pfizer, Comcast, etc.) from the header to see account-specific narratives, events, and approvals.
+Open [http://localhost:3000](http://localhost:3000). Switch accounts (JPMorgan, Pfizer, Comcast, etc.) from the header to see how the capture plan, stakeholder map, deal plan, and field kit shift by account.
 
 ## Tech stack
 
-Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Recharts. Client-side only.
+Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Recharts. Prototype-grade, mostly client-side.
 
 ---
 

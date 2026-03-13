@@ -29,8 +29,8 @@ export function Signals({ signals }: SignalsProps) {
       className="space-y-8 sm:space-y-10"
     >
       <SectionHeader
-        title="Signals"
-        subtitle="A quieter evidence desk: every recommendation has an owner, a source, a freshness stamp, and an action."
+        title="Deal signals"
+        subtitle="The hypotheses I would pressure-test in discovery, pilot design, security review, and executive conversations."
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -38,7 +38,7 @@ export function Signals({ signals }: SignalsProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <Activity className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Tracked signals
+              Working hypotheses
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
@@ -49,7 +49,7 @@ export function Signals({ signals }: SignalsProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <Radar className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Avg. confidence
+              Conviction level
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
@@ -60,11 +60,11 @@ export function Signals({ signals }: SignalsProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <ShieldCheck className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Standard
+              Use
             </p>
           </div>
           <p className="mt-3 text-[14px] leading-relaxed text-text-secondary">
-            No feed theater. No passive activity. Only source-backed signals worth acting on.
+            These are starting points for capture planning, not claims of live telemetry from the account.
           </p>
         </div>
       </div>

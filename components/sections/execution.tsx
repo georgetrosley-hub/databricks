@@ -49,8 +49,8 @@ export function Execution({
       className="space-y-8 sm:space-y-10"
     >
       <SectionHeader
-        title="Execution"
-        subtitle="The mutual action plan, the named owners, and the decisions that keep the deal moving."
+        title="Deal plan"
+        subtitle="The sequence I would run: land the pilot, clear governance, tighten the executive story, start commercial work early, then expand."
       />
 
       <AnimatePresence>
@@ -77,7 +77,7 @@ export function Execution({
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-claude-coral/80" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-claude-coral/70">
-              Decision queue
+              Decisions I would force early
             </p>
           </div>
           <div className="mt-5 grid gap-4 xl:grid-cols-2">

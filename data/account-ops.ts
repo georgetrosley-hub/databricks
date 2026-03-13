@@ -31,7 +31,7 @@ function getChampionProfile(account: Account) {
 
   if (wedge.includes("platform") || wedge.includes("developer") || wedge.includes("engineering")) {
     return {
-      name: "Taylor Morgan",
+      name: "Platform engineering champion",
       title: "Director, Platform Engineering",
       team: "Engineering",
       note: "Best path to land remains developer productivity with a controlled platform cohort.",
@@ -40,7 +40,7 @@ function getChampionProfile(account: Account) {
 
   if (wedge.includes("finance") || wedge.includes("model risk")) {
     return {
-      name: "Priya Shah",
+      name: "Model risk champion",
       title: "SVP, Model Risk",
       team: "Risk",
       note: "Champion path depends on turning governance requirements into the reason to buy, not the reason to wait.",
@@ -49,7 +49,7 @@ function getChampionProfile(account: Account) {
 
   if (wedge.includes("support")) {
     return {
-      name: "Maya Brooks",
+      name: "Support leader champion",
       title: "VP, Customer Support",
       team: "Customer Operations",
       note: "Operational buyer cares about ticket quality, handle time, and fast proof points.",
@@ -58,7 +58,7 @@ function getChampionProfile(account: Account) {
 
   if (wedge.includes("r&d") || wedge.includes("medical") || wedge.includes("clinical")) {
     return {
-      name: "Elena Park",
+      name: "Medical affairs champion",
       title: "VP, Medical Affairs",
       team: "R&D",
       note: "This wedge wins when the workflow is obviously regulated, high-cost, and document-heavy.",
@@ -67,7 +67,7 @@ function getChampionProfile(account: Account) {
 
   if (wedge.includes("hr") || wedge.includes("payroll")) {
     return {
-      name: "Jordan Ellis",
+      name: "HR operations champion",
       title: "VP, HR Operations",
       team: "HR",
       note: "The buyer will need confidence in access controls before they will champion internally.",
@@ -75,7 +75,7 @@ function getChampionProfile(account: Account) {
   }
 
   return {
-    name: "Alex Rivera",
+    name: "Transformation champion",
     title: "VP, Enterprise Transformation",
     team: "Strategy",
     note: "The strongest internal narrative is a measured wedge with clear executive upside.",
@@ -120,20 +120,20 @@ export function buildAccountSignals(
   const signals: AccountSignal[] = [
     {
       id: `${account.id}-wedge`,
-      title: "Initial wedge is credible",
+      title: "Working hypothesis: best first wedge",
       summary: `${champion.title} is the cleanest path to land ${account.firstWedge.toLowerCase()}. The wedge matches the account profile and keeps the first deal tightly scoped.`,
       priority: "high",
       confidence: Math.min(94, Math.max(72, account.aiMaturityScore + 12)),
       owner: champion.name,
       impact: `$${account.estimatedLandValue.toFixed(2)}M land is reachable if the pilot stays narrow and measurable.`,
       recommendedAction: `Get ${champion.name} to co-author a 30-day pilot scope and success criteria this week.`,
-      sourceType: "call",
-      sourceLabel: "Discovery notes",
-      sourceFreshness: "Updated today",
+      sourceType: "relationship",
+      sourceLabel: "Account thesis",
+      sourceFreshness: "Working hypothesis",
     },
     {
       id: `${account.id}-security`,
-      title: "Governance workstream needs to be named early",
+      title: "Working hypothesis: governance will decide speed",
       summary: `${account.topBlockers[1] ?? account.topBlockers[0]} The deal will slow down if security and legal remain abstract risks instead of owned workstreams.`,
       priority: account.securitySensitivity >= 90 ? "critical" : "high",
       confidence: Math.min(96, account.securitySensitivity),
@@ -141,12 +141,12 @@ export function buildAccountSignals(
       impact: "This is the control point that determines whether the pilot is treated as real or experimental.",
       recommendedAction: `Book the architecture and security review now, with a written data-flow narrative before the meeting.`,
       sourceType: "document",
-      sourceLabel: "Security review prep",
-      sourceFreshness: "1 day ago",
+      sourceLabel: "Blocker mapping",
+      sourceFreshness: "Working hypothesis",
     },
     {
       id: `${account.id}-competition`,
-      title: `Primary competitor to beat: ${topCompetitor?.name ?? "Microsoft"}`,
+      title: `Working hypothesis: primary competitor is ${topCompetitor?.name ?? "Microsoft"}`,
       summary: topCompetitor
         ? `${topCompetitor.name} has the strongest structural advantage in this account because of ${topCompetitor.strengthAreas.slice(0, 2).join(" and ")}.`
         : "The biggest threat is an incumbent platform already embedded in the account.",
@@ -157,11 +157,11 @@ export function buildAccountSignals(
       recommendedAction: `Arm the rep and champion with a one-page competitive memo tied specifically to ${account.name}.`,
       sourceType: "market",
       sourceLabel: "Competitive watchlist",
-      sourceFreshness: "2 days ago",
+      sourceFreshness: "Working hypothesis",
     },
     {
       id: `${account.id}-expansion`,
-      title: "Expansion path is already visible",
+      title: "Working hypothesis: best second motion",
       summary: `${account.topExpansionPaths[0]} is the most credible second motion once the initial wedge proves value.`,
       priority: "medium",
       confidence: Math.min(90, Math.max(68, account.aiMaturityScore + 6)),
@@ -170,11 +170,11 @@ export function buildAccountSignals(
       recommendedAction: `Mention the expansion thesis in every executive conversation, but do not sell phase two before phase one is safe.`,
       sourceType: "relationship",
       sourceLabel: "Account plan",
-      sourceFreshness: "3 days ago",
+      sourceFreshness: "Working hypothesis",
     },
     {
       id: `${account.id}-executive`,
-      title: "Executive narrative can be tightened",
+      title: "Working hypothesis: exec narrative needs tightening",
       summary: `The current account story has enough substance, but it should be framed around business urgency, safe deployment, and a narrow first win for ${account.name}.`,
       priority: "medium",
       confidence: 76,
@@ -183,7 +183,7 @@ export function buildAccountSignals(
       recommendedAction: `Prepare a briefing for ${secondSponsor.name} that names why now, why Claude, what the first proof point is, and what support is needed.`,
       sourceType: "crm",
       sourceLabel: "Executive account summary",
-      sourceFreshness: "4 days ago",
+      sourceFreshness: "Working hypothesis",
     },
   ];
 
@@ -239,7 +239,7 @@ export function buildStakeholders(account: Account): Stakeholder[] {
     },
     {
       id: `${account.id}-security`,
-      name: "Security owner",
+      name: "Security reviewer",
       title: getSecurityLead(account),
       team: "Security",
       stance: account.securitySensitivity >= 90 ? "blocker" : "neutral",
@@ -250,7 +250,7 @@ export function buildStakeholders(account: Account): Stakeholder[] {
     },
     {
       id: `${account.id}-procurement`,
-      name: "Commercial owner",
+      name: "Procurement lead",
       title: getProcurementOwner(account),
       team: "Procurement",
       stance: "neutral",
@@ -269,7 +269,7 @@ export function buildExecutionItems(account: Account): ExecutionItem[] {
   return [
     {
       id: `${account.id}-pilot`,
-      title: "Lock the first pilot scope",
+      title: "Define the first pilot",
       phase: "Land",
       owner: champion.name,
       status: "in_progress",
@@ -278,7 +278,7 @@ export function buildExecutionItems(account: Account): ExecutionItem[] {
     },
     {
       id: `${account.id}-security-review`,
-      title: "Run security and architecture review",
+      title: "Run the security and architecture workstream",
       phase: "Governance",
       owner: getSecurityLead(account),
       status: account.securitySensitivity >= 90 ? "blocked" : "ready",
@@ -289,7 +289,7 @@ export function buildExecutionItems(account: Account): ExecutionItem[] {
     },
     {
       id: `${account.id}-briefing`,
-      title: "Publish the executive account brief",
+      title: "Tighten the executive story",
       phase: "Executive",
       owner: primarySponsor.name,
       status: "ready",
@@ -300,7 +300,7 @@ export function buildExecutionItems(account: Account): ExecutionItem[] {
     },
     {
       id: `${account.id}-procurement`,
-      title: "Start the commercial path early",
+      title: "Start the commercial path before the pilot ends",
       phase: "Commercial",
       owner: getProcurementOwner(account),
       status: account.topBlockers.some((blocker) => blocker.toLowerCase().includes("procurement"))
@@ -312,7 +312,7 @@ export function buildExecutionItems(account: Account): ExecutionItem[] {
     },
     {
       id: `${account.id}-expand`,
-      title: `Map the second motion: ${account.topExpansionPaths[0]}`,
+      title: `Map the expansion path: ${account.topExpansionPaths[0]}`,
       phase: "Expansion",
       owner: champion.name,
       status: "ready",

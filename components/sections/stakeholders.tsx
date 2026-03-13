@@ -30,8 +30,8 @@ export function Stakeholders({ stakeholders }: StakeholdersProps) {
       className="space-y-8 sm:space-y-10"
     >
       <SectionHeader
-        title="Stakeholders"
-        subtitle="Who matters, where momentum exists, and what the next move should be."
+        title="Stakeholder map"
+        subtitle="The relationship plan I would build around the first wedge. This is a working map, not a claimed source-of-truth org chart."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -39,7 +39,7 @@ export function Stakeholders({ stakeholders }: StakeholdersProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <Users className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Mapped stakeholders
+              Mapped threads
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
@@ -50,7 +50,7 @@ export function Stakeholders({ stakeholders }: StakeholdersProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <Handshake className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Supportive threads
+              Champion paths
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
@@ -61,7 +61,7 @@ export function Stakeholders({ stakeholders }: StakeholdersProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <Star className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Executive sponsors
+              Executive coverage
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">
@@ -72,7 +72,7 @@ export function Stakeholders({ stakeholders }: StakeholdersProps) {
           <div className="flex items-center gap-2 text-text-secondary">
             <ShieldAlert className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Friction points
+              Likely blockers
             </p>
           </div>
           <p className="mt-3 text-[28px] font-semibold tracking-tight text-text-primary">

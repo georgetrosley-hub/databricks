@@ -27,8 +27,8 @@ type ArtifactId =
 const artifactTemplates = [
   {
     id: "briefing" as const,
-    label: "Executive briefing",
-    description: "Internal strategic brief for leadership and account review.",
+    label: "Executive brief",
+    description: "Internal account brief for leadership and account review.",
     icon: FileText,
     promptType: "executive_narrative",
     quickPrompts: [
@@ -50,7 +50,7 @@ const artifactTemplates = [
   {
     id: "email" as const,
     label: "Email draft",
-    description: "Write seller-ready or champion-forwardable email copy.",
+    description: "Write seller-ready or champion-forwardable deal email copy.",
     icon: Mail,
     promptType: "email_draft",
     quickPrompts: [
@@ -60,8 +60,8 @@ const artifactTemplates = [
   },
   {
     id: "objection" as const,
-    label: "Objection response",
-    description: "Turn a pushback into a usable talk track.",
+    label: "Objection talk track",
+    description: "Turn pushback into a response you can actually use in a deal.",
     icon: MessageSquare,
     promptType: "objection_response",
     quickPrompts: [
@@ -83,7 +83,7 @@ const artifactTemplates = [
   {
     id: "battlecard" as const,
     label: "Battle card",
-    description: "Sharper positioning against the main competitive threat.",
+    description: "Sharper account-specific positioning against the main threat.",
     icon: Swords,
     promptType: "battle_card",
     quickPrompts: [
@@ -187,8 +187,8 @@ export function ArtifactsWorkspace({
       className="space-y-8 sm:space-y-10"
     >
       <SectionHeader
-        title="Artifacts"
-        subtitle="One workspace for the outputs a strong seller actually needs: briefs, preps, emails, objections, and security responses."
+        title="Field kit"
+        subtitle="The actual outputs I would use to move a deal forward: exec briefs, meeting prep, follow-up emails, objection handling, security answers, and battle cards."
       />
 
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
