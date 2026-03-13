@@ -179,14 +179,14 @@ export function Overview({
           <div className="flex flex-col rounded-xl border border-surface-border bg-surface-muted/50 px-4 py-3.5">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-text-muted" strokeWidth={2} />
-              <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">This week</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Plans for this week</p>
             </div>
             <textarea
               value={workspaceDraft.thisWeekFocus}
               onChange={(e) => handleWorkspaceFieldChange("thisWeekFocus", e.target.value)}
               placeholder="e.g. Lock the pilot sponsor, define success criteria, schedule governance…"
               rows={2}
-              className="mt-2.5 w-full resize-none border-none bg-transparent p-0 text-[14px] font-normal leading-relaxed text-text-muted placeholder:text-text-faint focus:outline-none focus:ring-0 focus:text-text-primary focus:placeholder:text-text-muted"
+              className="mt-2.5 w-full resize-none border-none bg-transparent p-0 text-[14px] font-normal leading-relaxed text-text-muted placeholder:text-text-faint/60 focus:outline-none focus:ring-0 focus:text-text-primary focus:placeholder:opacity-0"
             />
           </div>
           <button
@@ -460,14 +460,14 @@ export function Overview({
 
             <div>
               <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                This week
+                Plans for this week
               </label>
               <textarea
                 value={workspaceDraft.thisWeekFocus}
                 onChange={(event) => handleWorkspaceFieldChange("thisWeekFocus", event.target.value)}
                 rows={2}
-                placeholder="e.g. Lock pilot sponsor, define success criteria, schedule governance…"
-                className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] font-normal leading-relaxed text-text-muted placeholder:text-text-faint focus:border-claude-coral/30 focus:outline-none focus:text-text-primary"
+                placeholder="e.g. Lock the pilot sponsor, define success criteria, schedule governance…"
+                className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] font-normal leading-relaxed text-text-muted placeholder:text-text-faint/60 focus:border-claude-coral/30 focus:outline-none focus:text-text-primary focus:placeholder:opacity-0"
               />
             </div>
 

@@ -262,7 +262,7 @@ export function ArtifactsWorkspace({
                         ? "e.g. Microsoft"
                         : "Enter the main request"
                 }
-                className="w-full rounded-[18px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
+                className="w-full rounded-[18px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
             </div>
             <div>
@@ -281,7 +281,7 @@ export function ArtifactsWorkspace({
                         ? "e.g. Developer productivity + governance"
                         : "Optional"
                 }
-                className="w-full rounded-[18px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
+                className="w-full rounded-[18px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
               />
             </div>
           </div>
@@ -295,7 +295,7 @@ export function ArtifactsWorkspace({
               onChange={(event) => setContext(event.target.value)}
               rows={4}
               placeholder="Anything Claude should know before drafting this artifact..."
-              className="w-full resize-none rounded-[22px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
+              className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
             />
           </div>
 
