@@ -127,7 +127,7 @@ export function ChatPanel({
             content:
               error instanceof Error
                 ? error.message
-                : "I couldn't process that request. Add your Databricks API key in the top right and try again.",
+                : "I couldn't process that request. Add your API key in the top right and try again.",
           },
         ]);
       }
@@ -227,7 +227,7 @@ export function ChatPanel({
                   </p>
                   {!hasApiKey && (
                     <div className="mb-6 rounded-lg border border-accent/20 bg-accent/[0.06] px-3 py-2 text-[11px] text-accent/85">
-                      If chat is not responding yet, add your Databricks API key from the top right.
+                      If chat is not responding yet, add your API key from the top right.
                     </div>
                   )}
                   <div className="space-y-2 w-full">

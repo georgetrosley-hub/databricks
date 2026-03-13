@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useApiKey } from "@/app/context/api-key-context";
+import type { LLMProvider } from "@/lib/server/llm/types";
 import { cn } from "@/lib/utils";
 import { DatabricksLogoIcon } from "@/components/ui/databricks-logo";
 import type { Account } from "@/types";
@@ -50,15 +51,17 @@ export function StatusBar({
   sidebarCollapsed,
   onToggleSidebar,
 }: StatusBarProps) {
-  const { apiKey, hasApiKey, isReady, setApiKey, clearApiKey } = useApiKey();
+  const { apiKey, provider, hasApiKey, isReady, setApiKey, setProvider, clearApiKey } = useApiKey();
   const [isApiKeyOpen, setIsApiKeyOpen] = useState(false);
   const [draftApiKey, setDraftApiKey] = useState("");
+  const [draftProvider, setDraftProvider] = useState<LLMProvider>("databricks");
 
   useEffect(() => {
     if (isApiKeyOpen) {
       setDraftApiKey(apiKey);
+      setDraftProvider(provider);
     }
-  }, [apiKey, isApiKeyOpen]);
+  }, [apiKey, provider, isApiKeyOpen]);
 
   return (
     <>
@@ -190,9 +193,9 @@ export function StatusBar({
           <div className="w-full max-w-md rounded-xl border border-surface-border/50 bg-surface-elevated shadow-2xl">
             <div className="flex items-center justify-between border-b border-surface-border/40 px-5 py-4">
               <div>
-                <p className="text-[13px] font-medium text-text-primary">Databricks API Key</p>
+                <p className="text-[13px] font-medium text-text-primary">LLM API Key</p>
                 <p className="mt-1 text-[11px] text-text-muted">
-                  Demo-only local key storage for generating deal materials in this artifact.
+                  Choose Claude, ChatGPT, Gemini, or Databricks. Keys are stored locally for this session.
                 </p>
               </div>
               <button
@@ -207,23 +210,39 @@ export function StatusBar({
 
             <div className="space-y-4 px-5 py-5">
               <div className="space-y-2">
-                <label htmlFor="databricks-api-key" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
-                  Databricks API Key
+                <label htmlFor="llm-provider" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                  Provider
+                </label>
+                <select
+                  id="llm-provider"
+                  value={draftProvider}
+                  onChange={(e) => setDraftProvider(e.target.value as LLMProvider)}
+                  className="w-full rounded-lg border border-surface-border/50 bg-surface px-3 py-2.5 text-[13px] text-text-primary focus:border-accent/30 focus:outline-none"
+                >
+                  <option value="anthropic">Claude (Anthropic)</option>
+                  <option value="openai">ChatGPT (OpenAI)</option>
+                  <option value="google">Gemini (Google)</option>
+                  <option value="databricks">Databricks</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="llm-api-key" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                  API Key
                 </label>
                 <input
-                  id="databricks-api-key"
+                  id="llm-api-key"
                   type="password"
                   value={draftApiKey}
                   onChange={(e) => setDraftApiKey(e.target.value)}
-                  placeholder="dapi..."
+                  placeholder={draftProvider === "anthropic" ? "sk-ant-..." : draftProvider === "openai" ? "sk-..." : draftProvider === "google" ? "AIza..." : "dapi..."}
                   className="w-full rounded-lg border border-surface-border/50 bg-surface px-3 py-2.5 text-[13px] text-text-primary placeholder:text-text-muted/60 focus:border-accent/30 focus:outline-none"
                 />
               </div>
 
               <div className="rounded-lg bg-surface/60 px-3 py-2 text-[11px] text-text-secondary">
                 {hasApiKey
-                  ? "A Databricks API key is currently saved for this browser."
-                  : "No Databricks API key is saved yet. Add one here to enable chat and content generation."}
+                  ? `A ${draftProvider === "anthropic" ? "Claude" : draftProvider === "openai" ? "ChatGPT" : draftProvider === "google" ? "Gemini" : "Databricks"} API key is saved for this browser.`
+                  : "Add your API key to enable chat and content generation."}
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -249,6 +268,7 @@ export function StatusBar({
                   <button
                     type="button"
                     onClick={() => {
+                      setProvider(draftProvider);
                       setApiKey(draftApiKey);
                       setIsApiKeyOpen(false);
                     }}

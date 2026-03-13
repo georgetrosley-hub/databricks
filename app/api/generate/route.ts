@@ -2,15 +2,16 @@ import { NextRequest } from "next/server";
 import { buildAccountContext } from "@/lib/prompts/base";
 import { CONTENT_PROMPTS } from "@/lib/prompts/content";
 import {
-  createDatabricksClient,
-  DEFAULT_MODEL,
-  getDatabricksErrorMessage,
-  getDatabricksErrorStatus,
-} from "@/lib/server/databricks";
+  streamCompletion,
+  parseLLMConfig,
+  getLLMErrorMessage,
+  getLLMErrorStatus,
+} from "@/lib/server/llm";
+import type { ChatMessage } from "@/lib/server/llm/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const client = createDatabricksClient(req);
+    const config = parseLLMConfig(req);
     const { type, account, competitors, context } = await req.json();
 
     const contentPrompt = CONTENT_PROMPTS[type] ?? CONTENT_PROMPTS.strategy_assessment;
@@ -20,22 +21,18 @@ export async function POST(req: NextRequest) {
       ? `${accountContext}\n\n## Additional Context\n${context}`
       : accountContext;
 
-    const stream = await client.chat.completions.create({
-      model: DEFAULT_MODEL,
-      max_tokens: 4096,
-      messages: [
-        { role: "system", content: contentPrompt },
-        { role: "user", content: userMessage },
-      ],
-      stream: true,
-    });
+    const messages: ChatMessage[] = [
+      { role: "system", content: contentPrompt },
+      { role: "user", content: userMessage },
+    ];
+
+    const stream = streamCompletion(config, messages, 4096);
 
     const encoder = new TextEncoder();
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content ?? "";
+          for await (const text of stream) {
             if (text) {
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ text })}\n\n`)
@@ -60,9 +57,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Generate API error:", error);
     return new Response(
-      JSON.stringify({ error: getDatabricksErrorMessage(error) }),
+      JSON.stringify({ error: getLLMErrorMessage(error) }),
       {
-        status: getDatabricksErrorStatus(error),
+        status: getLLMErrorStatus(error),
         headers: { "Content-Type": "application/json" },
       }
     );

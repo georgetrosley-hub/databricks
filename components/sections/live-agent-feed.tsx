@@ -70,7 +70,7 @@ export function LiveAgentFeed({ events, account, competitors }: LiveAgentFeedPro
       const message =
         error instanceof Error
           ? error.message
-          : "Add your Databricks API key in the top right and try again.";
+          : "Add your API key in the top right and try again.";
       const errorEvent: SimulationEvent = {
         id: `ai-error-${Date.now()}`,
         timestamp: new Date(),
@@ -79,7 +79,7 @@ export function LiveAgentFeed({ events, account, competitors }: LiveAgentFeedPro
         type: "research_signal",
         title: "AI request needs attention",
         explanation: message,
-        recommendedAction: "Update your Databricks API key from the top right, then retry.",
+        recommendedAction: "Update your API key from the top right, then retry.",
       };
 
       setAiEvents((prev): SimulationEvent[] => [

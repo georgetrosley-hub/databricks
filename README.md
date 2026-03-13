@@ -27,12 +27,22 @@ It is meant to show how to approach large pharma enterprise deals:
 
 Today this is a **prototype**. Some account logic is modeled from metadata rather than pulled from real systems. The point is to show GTM judgment and operating style, with Databricks Foundation Model API used as an assistive layer for deal execution.
 
-## Environment variables
+## LLM provider support
 
-Set these to enable chat and content generation:
+Reps can choose their preferred LLM via the API Key button in the top right:
 
-- **DATABRICKS_OPENAI_BASE_URL** — Your Databricks workspace Foundation Model API base URL, e.g. `https://<workspace>.cloud.databricks.com/serving-endpoints/<endpoint>/openai/v1`
-- **DATABRICKS_API_KEY** — Your Databricks API token (or add via the API Key button in the app)
+- **Claude (Anthropic)** — `sk-ant-...` key from console.anthropic.com
+- **ChatGPT (OpenAI)** — `sk-...` key from platform.openai.com
+- **Gemini (Google)** — `AIza...` key from aistudio.google.com
+- **Databricks** — `dapi...` token; requires `DATABRICKS_OPENAI_BASE_URL` set server-side
+
+Keys are stored locally in the browser and never sent to our servers.
+
+## Environment variables (optional)
+
+For **Databricks** provider only:
+
+- **DATABRICKS_OPENAI_BASE_URL** — Workspace Foundation Model API base URL, e.g. `https://<workspace>.cloud.databricks.com/serving-endpoints/<endpoint>/openai/v1`
 
 ## Run it
 
