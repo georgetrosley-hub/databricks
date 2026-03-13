@@ -13,6 +13,10 @@ import { Execution } from "@/components/sections/execution";
 import { First30Days } from "@/components/sections/first-30-days";
 import { Signals } from "@/components/sections/signals";
 import { ArtifactsWorkspace } from "@/components/sections/artifacts-workspace";
+import { TerritoryCommandCenter } from "@/components/sections/territory-command-center";
+import { AccountIntelligence } from "@/components/sections/account-intelligence";
+import { PilotPipelineSection } from "@/components/sections/pilot-pipeline-section";
+import { PartnerStrategy } from "@/components/sections/partner-strategy";
 import { motion, AnimatePresence } from "framer-motion";
 
 function MainContent() {
@@ -65,6 +69,20 @@ function MainContent() {
   const oversightStatus = pendingDecisionCount > 0 ? "active" as const : "idle" as const;
 
   const sections: Record<SectionId, React.ReactNode> = {
+    territoryCommandCenter: (
+      <TerritoryCommandCenter
+        accounts={accounts}
+        onAccountSelect={handleAccountChange}
+        onSectionChange={handleSectionChange}
+      />
+    ),
+    accountIntelligence: (
+      <AccountIntelligence account={account} />
+    ),
+    pilotPipeline: <PilotPipelineSection />,
+    partnerStrategy: (
+      <PartnerStrategy account={account} />
+    ),
     overview: (
       <Overview
         account={account}

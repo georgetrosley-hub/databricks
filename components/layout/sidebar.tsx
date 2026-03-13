@@ -16,9 +16,22 @@ import {
   TrendingUp,
   ClipboardList,
   CalendarCheck,
+  Map,
+  Brain,
+  FlaskConical,
+  Handshake,
 } from "lucide-react";
 
 const sectionGroups = [
+  {
+    label: "HLS Territory Command Center",
+    items: [
+      { id: "territoryCommandCenter", label: "Territory Dashboard", icon: Map },
+      { id: "accountIntelligence", label: "Account Intelligence", icon: Brain },
+      { id: "pilotPipeline", label: "Pilot Pipeline", icon: FlaskConical },
+      { id: "partnerStrategy", label: "Partner Strategy", icon: Handshake },
+    ],
+  },
   {
     label: "Deal Strategy",
     items: [
