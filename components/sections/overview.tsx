@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users, Calendar, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users } from "lucide-react";
 import { ClaudeActionBar } from "@/components/ui/claude-action-bar";
 import { SectionHeader } from "@/components/ui/section-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -88,61 +88,42 @@ export function Overview({
       className="space-y-10 sm:space-y-12"
     >
       {/* Daily operator workspace — where the AE lives */}
-      <section className="rounded-[28px] border border-claude-coral/12 bg-claude-coral/[0.04] p-5 sm:p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-claude-coral/80" strokeWidth={1.8} />
-            <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-claude-coral/80">
-              {todayLabel}
-            </span>
-          </div>
-          <span className="text-text-faint">·</span>
-          <span className="text-[11px] text-text-faint">
-            George Trosley · War Room · {account.name}
-          </span>
+      <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">
+            {todayLabel} · {account.name}
+          </p>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+            Today&apos;s workspace
+          </h1>
         </div>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
-          Today&apos;s workspace
-        </h1>
-        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-text-secondary">
-          Where I left off, what I&apos;m focused on this week, and the next move I need to make.
-        </p>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">This week</p>
-            </div>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          <div className="flex flex-col">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">This week</p>
             <textarea
               value={workspaceDraft.thisWeekFocus}
               onChange={(e) => onUpdateWorkspaceField("thisWeekFocus", e.target.value)}
               placeholder="Lock the pilot sponsor, define success criteria, and schedule the governance workstream."
-              rows={2}
-              className="mt-3 w-full resize-none rounded-[14px] border border-white/8 bg-black/20 px-3 py-2 text-[14px] leading-relaxed text-text-primary placeholder:text-text-muted/60 focus:border-claude-coral/25 focus:outline-none"
+              rows={3}
+              className="mt-3 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[14px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none focus:ring-1 focus:ring-claude-coral/20"
             />
           </div>
-          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
-            <div className="flex items-center gap-2">
-              <ArrowRight className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Where I left off</p>
-            </div>
-            <p className="mt-3 text-[14px] font-medium text-text-primary">
+          <div className="flex flex-col">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">Where I left off</p>
+            <p className="mt-3 text-[15px] font-medium text-text-primary">
               {lastUpdate?.title ?? "Daily account reset"}
             </p>
-            <p className="mt-1 text-[12px] text-text-muted">
+            <p className="mt-1 text-[13px] text-text-muted">
               {lastUpdate?.createdAt ?? "Today"}
             </p>
           </div>
-          <div className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4">
-            <div className="flex items-center gap-2">
-              <Crosshair className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Today&apos;s priority</p>
-            </div>
-            <p className="mt-3 text-[14px] font-medium text-text-primary">
+          <div className="flex flex-col">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-text-faint">Today&apos;s priority</p>
+            <p className="mt-3 text-[15px] font-medium text-text-primary">
               {topPriority?.title ?? "Define the first pilot"}
             </p>
-            <p className="mt-1 text-[12px] text-text-muted">
+            <p className="mt-1 text-[13px] text-text-muted">
               {topPriority?.owner ?? champion?.name} · {topPriority?.dueLabel ?? "This week"}
             </p>
           </div>
