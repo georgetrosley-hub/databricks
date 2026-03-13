@@ -1,25 +1,42 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Building2,
-  Database,
-  Cpu,
-  Target,
-  TrendingUp,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
-import { getAccountIntelligence } from "@/data/account-intelligence";
 import { getFlagshipDealContext } from "@/data/flagship-deals";
 import type { Account } from "@/types";
 import type { SectionId } from "@/components/layout/sidebar";
 import { cn } from "@/lib/utils";
 
-function maturityLabel(score: number) {
-  if (score >= 80) return { label: "Advanced", color: "text-accent" };
-  if (score >= 60) return { label: "Growing", color: "text-text-secondary" };
-  return { label: "Early", color: "text-text-muted" };
+type Stage = "Discovery" | "Early" | "Target";
+
+function deriveStage(accountId: string): Stage {
+  const flagship = getFlagshipDealContext(accountId);
+  if (!flagship) return "Discovery";
+  const done = flagship.milestones.filter((m) => m.status === "done").length;
+  if (done >= 3) return "Target";
+  if (done >= 1) return "Early";
+  return "Discovery";
+}
+
+function pilotShortName(scope: string): string {
+  const first = scope.split("—")[0]?.trim() ?? scope;
+  if (first.includes("Clinical trial")) return "Clinical Analytics";
+  if (first.includes("R&D data")) return "R&D Data Lake";
+  if (first.includes("trial data")) return "Trial Analytics";
+  if (first.includes("knowledge") || first.includes("document")) return "Knowledge & Docs";
+  if (first.includes("Vaccines")) return "Vaccines Platform";
+  return first.slice(0, 40) + (first.length > 40 ? "…" : "");
+}
+
+function riskShort(keyRisk: string): string {
+  if (keyRisk.includes("Snowflake")) return "Snowflake";
+  if (keyRisk.includes("Palantir")) return "Palantir";
+  if (keyRisk.includes("Security") || keyRisk.includes("Quality")) return "Security review";
+  if (keyRisk.includes("Legal")) return "Legal review";
+  if (keyRisk.includes("EU") || keyRisk.includes("GDPR")) return "EU residency";
+  if (keyRisk.includes("Budget") || keyRisk.includes("procurement")) return "Budget";
+  return keyRisk.slice(0, 25) + (keyRisk.length > 25 ? "…" : "");
 }
 
 interface TerritoryCommandCenterProps {
@@ -27,6 +44,8 @@ interface TerritoryCommandCenterProps {
   onAccountSelect: (accountId: string) => void;
   onSectionChange: (section: SectionId) => void;
 }
+
+const COLS = ["Account", "Stage", "Champion", "Pilot", "Risk", "Expansion"] as const;
 
 export function TerritoryCommandCenter({
   accounts,
@@ -38,92 +57,108 @@ export function TerritoryCommandCenter({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.45 }}
-      className="space-y-8 sm:space-y-10"
+      className="space-y-6"
     >
       <SectionHeader
-        title="HLS Territory Command Center"
-        subtitle="Strategic accounts — where to spend time"
+        title="HLS Territory Control Panel"
+        subtitle="How I run this territory — at a glance"
       />
 
-      <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        {accounts.map((account, i) => {
-          const intel = getAccountIntelligence(account.id);
-          const flagship = getFlagshipDealContext(account.id);
-          const aiMaturity = maturityLabel(account.aiMaturityScore);
-          const totalOpp = account.estimatedLandValue + account.estimatedExpansionValue;
+      <div className="overflow-x-auto rounded-xl border border-surface-border/50 bg-surface-elevated/40">
+        <table className="w-full min-w-[640px] text-left">
+          <thead>
+            <tr className="border-b border-surface-border/50">
+              {COLS.map((col) => (
+                <th
+                  key={col}
+                  className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-faint"
+                >
+                  {col}
+                </th>
+              ))}
+              <th className="w-8 px-2 py-3" aria-hidden />
+            </tr>
+          </thead>
+          <tbody>
+            {accounts.map((account, i) => {
+              const flagship = getFlagshipDealContext(account.id);
+              const stage = deriveStage(account.id);
+              const champion = flagship
+                ? flagship.championTitle.split(",")[0]?.trim() ?? flagship.championName
+                : "—";
+              const pilot = flagship
+                ? pilotShortName(flagship.pilotCriteria.scope)
+                : account.firstWedge.slice(0, 35) + "…";
+              const risk = flagship
+                ? riskShort(flagship.competitiveBattle.keyRisk)
+                : account.topBlockers[0]?.slice(0, 25) ?? "—";
+              const expansion = account.topExpansionPaths[0] ?? "—";
 
-          return (
-            <motion.button
-              key={account.id}
-              type="button"
-              onClick={() => {
-                onAccountSelect(account.id);
-                onSectionChange("overview");
-              }}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.35 }}
-              className={cn(
-                "group flex flex-col rounded-2xl border border-surface-border/50 bg-surface-elevated/50 p-5 text-left transition-colors",
-                "hover:border-accent/30 hover:bg-surface-elevated/80"
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-[14px] font-semibold text-text-primary">
-                    {account.name}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-[12px] text-text-muted">
-                    {account.firstWedge}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-text-faint transition-colors group-hover:text-accent" />
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
-                <div className="flex items-center gap-2">
-                  <Cpu className="h-3.5 w-3.5 text-text-faint" />
-                  <span className="text-text-muted">AI maturity</span>
-                  <span className={cn("font-medium", aiMaturity.color)}>
-                    {aiMaturity.label}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Database className="h-3.5 w-3.5 text-text-faint" />
-                  <span className="text-text-muted">Data posture</span>
-                  <span className="truncate text-text-secondary">
-                    {intel?.cloudAlignment ?? "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Target className="h-3.5 w-3.5 text-text-faint" />
-                  <span className="text-text-muted">Pilot</span>
-                  <span className="text-text-secondary">
-                    {flagship ? "Scoped" : "Identified"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-3.5 w-3.5 text-text-faint" />
-                  <span className="text-text-muted">Expansion</span>
-                  <span className="font-medium text-accent/90">
-                    ${totalOpp.toFixed(1)}M
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {account.existingVendorFootprint.slice(0, 3).map((v) => (
-                  <span
-                    key={v}
-                    className="rounded-md bg-surface-muted/60 px-2 py-0.5 text-[10px] text-text-muted"
-                  >
-                    {v}
-                  </span>
-                ))}
-              </div>
-            </motion.button>
-          );
-        })}
+              return (
+                <motion.tr
+                  key={account.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.04, duration: 0.3 }}
+                  className={cn(
+                    "group border-b border-surface-border/30 last:border-b-0",
+                    "hover:bg-surface-muted/30 transition-colors"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAccountSelect(account.id);
+                        onSectionChange("overview");
+                      }}
+                      className="text-left font-medium text-text-primary hover:text-accent transition-colors"
+                    >
+                      {account.name}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={cn(
+                        "inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium",
+                        stage === "Target" && "bg-accent/15 text-accent",
+                        stage === "Early" && "bg-surface-muted/80 text-text-secondary",
+                        stage === "Discovery" && "text-text-muted"
+                      )}
+                    >
+                      {stage}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-text-secondary">
+                    {champion}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-text-secondary">
+                    {pilot}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-text-muted">
+                    {risk}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-text-secondary">
+                    {expansion.length > 50 ? expansion.slice(0, 50) + "…" : expansion}
+                  </td>
+                  <td className="px-2 py-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAccountSelect(account.id);
+                        onSectionChange("overview");
+                      }}
+                      className="rounded p-1 text-text-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-accent"
+                      aria-label={`Open ${account.name}`}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </motion.div>
   );

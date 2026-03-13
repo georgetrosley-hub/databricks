@@ -159,6 +159,42 @@ Based on the account profile, recommend the top Databricks use cases for life sc
 
 Rank by a combination of business impact and likelihood of adoption for THIS specific account.`,
 
+  deal_simulation: `${BASE_SYSTEM_PROMPT}
+
+You are a GTM simulator for Databricks life sciences deals. The user has selected:
+
+- Account: [provided in context]
+- Entry point: [provided in context]
+- Champion: [provided in context]
+- Incumbent: [provided in context]
+
+Generate a complete, actionable deal simulation. Structure it as:
+
+## Live Enterprise Deal Simulation
+
+**Pilot Motion (next 90 days)**
+- Specific milestones week-by-week: who to meet, what to deliver, gates to pass
+- Security/Quality/Legal touchpoints and how to sequence them
+- Pilot scope and success criteria to lock in
+
+**Stakeholder Sequence**
+- Order of engagement: who to activate first, second, third
+- For each: role, motivation, objection risk, how to position
+- Executive sponsor path and when to pull them in
+
+**Likely Objections**
+- Top 3–4 objections this deal will surface
+- For each: the objection, why it comes up, response strategy, proof points to use
+- Incumbent-specific traps and how to avoid them
+
+**Expansion Path**
+- Phase 1 (Pilot): narrow scope, proof point
+- Phase 2 (Data pipelines): what workloads expand next
+- Phase 3 (ML / AI): Mosaic AI, model deployment
+- Phase 4 (Enterprise): lakehouse, Unity Catalog, cross-org
+
+Be specific to the account, entry point, champion, and incumbent. This should feel like a playbook a rep could run. No generic advice.`,
+
   expansion_pitch: `${BASE_SYSTEM_PROMPT}
 
 Generate a targeted expansion pitch for a specific department within the account. Structure it as:

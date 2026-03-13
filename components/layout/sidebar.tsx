@@ -20,13 +20,15 @@ import {
   Brain,
   FlaskConical,
   Handshake,
+  Play,
 } from "lucide-react";
 
 const sectionGroups = [
   {
     label: "HLS Territory Command Center",
     items: [
-      { id: "territoryCommandCenter", label: "Territory Dashboard", icon: Map },
+      { id: "territoryCommandCenter", label: "Territory Control Panel", icon: Map },
+      { id: "dealSimulation", label: "Deal Simulator", icon: Play },
       { id: "accountIntelligence", label: "Account Intelligence", icon: Brain },
       { id: "pilotPipeline", label: "Pilot Pipeline", icon: FlaskConical },
       { id: "partnerStrategy", label: "Partner Strategy", icon: Handshake },

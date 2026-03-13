@@ -17,6 +17,7 @@ import { TerritoryCommandCenter } from "@/components/sections/territory-command-
 import { AccountIntelligence } from "@/components/sections/account-intelligence";
 import { PilotPipelineSection } from "@/components/sections/pilot-pipeline-section";
 import { PartnerStrategy } from "@/components/sections/partner-strategy";
+import { DealSimulation } from "@/components/sections/deal-simulation";
 import { motion, AnimatePresence } from "framer-motion";
 
 function MainContent() {
@@ -75,6 +76,9 @@ function MainContent() {
         onAccountSelect={handleAccountChange}
         onSectionChange={handleSectionChange}
       />
+    ),
+    dealSimulation: (
+      <DealSimulation accounts={accounts} competitors={competitors} />
     ),
     accountIntelligence: (
       <AccountIntelligence account={account} />
