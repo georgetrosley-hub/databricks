@@ -13,6 +13,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   X,
+  TrendingUp,
+  ClipboardList,
+  CalendarCheck,
 } from "lucide-react";
 
 const sectionGroups = [
@@ -20,6 +23,8 @@ const sectionGroups = [
     label: "Deal Strategy",
     items: [
       { id: "overview", label: "War Room", icon: LayoutDashboard },
+      { id: "dealProgression", label: "Deal Progression", icon: TrendingUp },
+      { id: "accountLog", label: "Account Log", icon: ClipboardList },
       { id: "stakeholders", label: "Stakeholder Map", icon: Users },
       { id: "execution", label: "Deal Plan", icon: Workflow },
     ],
@@ -27,6 +32,7 @@ const sectionGroups = [
   {
     label: "Field Work",
     items: [
+      { id: "first30Days", label: "My First 30 Days", icon: CalendarCheck },
       { id: "signals", label: "Deal Signals", icon: Radar },
       { id: "artifacts", label: "Field Kit", icon: FileText },
     ],

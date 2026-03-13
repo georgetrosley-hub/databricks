@@ -2,14 +2,13 @@
 
 import { useState, useMemo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BriefcaseBusiness, Crosshair, Users, Eye, CircleDot, Zap, Target } from "lucide-react";
-import { ClaudeActionBar } from "@/components/ui/claude-action-bar";
+import { AlertTriangle, ArrowRight, Crosshair, Users, Eye, CircleDot, Zap, Target } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
+import type { SectionId } from "@/components/layout/sidebar";
 import { MetricCard } from "@/components/ui/metric-card";
 import { ClaudeSparkle } from "@/components/ui/claude-logo";
-import { getFlagshipDealContext } from "@/data/flagship-deals";
 import { useToast } from "@/app/context/toast-context";
-import { isStale, isStaleUpdate } from "@/lib/deal-health";
+import { isStale } from "@/lib/deal-health";
 import type {
   Account,
   AccountSignal,
@@ -45,6 +44,7 @@ interface OverviewProps {
     note: string,
     tag: AccountUpdate["tag"]
   ) => void;
+  onSectionChange?: (id: SectionId) => void;
 }
 
 export function Overview({
@@ -60,10 +60,8 @@ export function Overview({
   dealHealth,
   onUpdateWorkspaceField,
   onAddAccountUpdate,
+  onSectionChange,
 }: OverviewProps) {
-  const [updateTitle, setUpdateTitle] = useState("");
-  const [updateNote, setUpdateNote] = useState("");
-  const [updateTag, setUpdateTag] = useState<AccountUpdate["tag"]>("internal");
   const saveToastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { showToast } = useToast();
 
@@ -85,20 +83,10 @@ export function Overview({
   const thisWeek = executionItems.filter((item) => item.status === "in_progress" || item.status === "ready").slice(0, 3);
   const firstDecision = executionItems.find((item) => item.phase === "Land");
   const expansionItem = executionItems.find((item) => item.phase === "Expansion");
-  const recentUpdates = accountUpdates.slice(0, 5);
-
-  const handleAddUpdate = () => {
-    onAddAccountUpdate(updateTitle, updateNote, updateTag);
-    setUpdateTitle("");
-    setUpdateNote("");
-    setUpdateTag("internal");
-    showToast("Update added");
-  };
 
   const todayLabel = useMemo(() => getTodayLabel(), []);
   const topPriority = executionItems.find((i) => i.status === "blocked") ?? executionItems.find((i) => i.status === "in_progress");
   const lastUpdate = accountUpdates[0];
-  const flagshipDeal = useMemo(() => getFlagshipDealContext(account.id), [account.id]);
 
   const blockedItems = executionItems.filter((i) => i.status === "blocked");
   const needsAttention = executionItems.filter(
@@ -191,12 +179,7 @@ export function Overview({
           </div>
           <button
             type="button"
-            onClick={() => {
-              const el = lastUpdate
-                ? document.getElementById(`account-update-${lastUpdate.id}`)
-                : document.getElementById("account-log");
-              el?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
+            onClick={() => onSectionChange?.("accountLog")}
             className="flex flex-col justify-center rounded-xl border border-claude-coral/25 bg-surface-muted/50 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted/70 hover:border-claude-coral/40"
           >
             <div className="flex items-center gap-2">
@@ -210,11 +193,7 @@ export function Overview({
           </button>
           <button
             type="button"
-            onClick={() => {
-              const inThisWeek = topPriority && thisWeek.some((i) => i.id === topPriority.id);
-              const targetId = inThisWeek ? `execution-item-${topPriority!.id}` : "my-first-30-days";
-              document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
+            onClick={() => onSectionChange?.("first30Days")}
             className="flex flex-col justify-center rounded-xl border border-claude-coral/25 bg-surface-muted/50 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted/70 hover:border-claude-coral/40"
           >
             <div className="flex items-center gap-2">
@@ -350,328 +329,6 @@ export function Overview({
             </p>
           </div>
         </aside>
-      </div>
-
-      {flagshipDeal && (
-        <section className="space-y-4">
-          <SectionHeader
-            title="Deal progress"
-            subtitle={`Named champion, pilot criteria, and competitive battle for ${account.name}.`}
-          />
-          <div className="mt-6 grid gap-6 xl:grid-cols-3">
-                <div className="xl:col-span-2 space-y-6">
-              <div className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Champion</p>
-                <p className="mt-2 text-[15px] font-medium text-text-primary">
-                  {flagshipDeal.championName} · {flagshipDeal.championTitle}
-                </p>
-                {flagshipDeal.lastCallSummary && (
-                  <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                    {flagshipDeal.lastCallSummary}
-                  </p>
-                )}
-              </div>
-              <div className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Pilot criteria</p>
-                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                  {flagshipDeal.pilotCriteria.scope}
-                </p>
-                <ul className="mt-3 space-y-1 text-[12px] text-text-muted">
-                  {flagshipDeal.pilotCriteria.successMetrics.map((m, i) => (
-                    <li key={i}>• {m}</li>
-                  ))}
-                </ul>
-                <p className="mt-3 text-[12px] text-text-faint">
-                  {flagshipDeal.pilotCriteria.timeline} · Owner: {flagshipDeal.pilotCriteria.owner}
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Competitive battle</p>
-                <p className="mt-2 text-[13px] font-medium text-text-primary">
-                  Incumbent: {flagshipDeal.competitiveBattle.incumbent}
-                </p>
-                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                  {flagshipDeal.competitiveBattle.displacementStrategy}
-                </p>
-                <p className="mt-3 text-[12px] text-claude-coral/80">
-                  Win condition: {flagshipDeal.competitiveBattle.winCondition}
-                </p>
-              </div>
-            </div>
-            <div className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Deal milestones</p>
-              <div className="mt-4 space-y-3">
-                {flagshipDeal.milestones.map((m, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span
-                      className={`shrink-0 mt-0.5 h-2 w-2 rounded-full ${
-                        m.status === "done"
-                          ? "bg-emerald-500/80"
-                          : m.status === "in_progress"
-                            ? "bg-claude-coral/80"
-                            : "bg-white/30"
-                      }`}
-                    />
-                    <div>
-                      <p className="text-[13px] font-medium text-text-primary">{m.label}</p>
-                      <p className="text-[11px] text-text-muted">
-                        {m.date}
-                        {m.owner ? ` · ${m.owner}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <section className="rounded-[28px] border border-white/8 bg-white/[0.03] p-5 sm:p-6">
-          <SectionHeader
-            title="AE control board"
-            subtitle="This is the editable layer: the account thesis, the win theme, the weekly focus, and the notes the rep actually lives in."
-          />
-          <div className="grid gap-4">
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Deal thesis
-              </label>
-              <textarea
-                value={workspaceDraft.dealThesis}
-                onChange={(event) => handleWorkspaceFieldChange("dealThesis", event.target.value)}
-                rows={3}
-                className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Win theme
-              </label>
-              <textarea
-                value={workspaceDraft.winTheme}
-                onChange={(event) => handleWorkspaceFieldChange("winTheme", event.target.value)}
-                rows={3}
-                className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-claude-coral">
-                Plans for this week
-              </label>
-              <textarea
-                value={workspaceDraft.thisWeekFocus}
-                onChange={(event) => handleWorkspaceFieldChange("thisWeekFocus", event.target.value)}
-                rows={2}
-                placeholder="e.g. Lock the pilot sponsor, define success criteria, schedule governance…"
-                className="w-full resize-none rounded-[22px] border border-claude-coral/25 bg-surface-muted/20 px-4 py-3 text-[13px] font-normal leading-relaxed text-text-muted placeholder:text-text-faint/60 focus:border-claude-coral/40 focus:outline-none focus:text-text-primary focus:placeholder:opacity-0"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Operator notes
-              </label>
-              <textarea
-                value={workspaceDraft.operatorNotes}
-                onChange={(event) => handleWorkspaceFieldChange("operatorNotes", event.target.value)}
-                rows={4}
-                className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
-              />
-            </div>
-          </div>
-        </section>
-
-        <ClaudeActionBar
-          title="Ask Claude inside the capture plan"
-          subtitle="Use Claude as the AE&apos;s live operator, not just a separate utility. These requests are specific to the deal you&apos;re in."
-          account={account}
-          competitors={competitors}
-          actions={[
-            {
-              id: "sharpen-thesis",
-              label: "Sharpen thesis",
-              prompt: `Rewrite my current deal thesis for ${account.name} so it sounds like a top enterprise AE's account strategy. Current thesis: ${workspaceDraft.dealThesis}`,
-            },
-            {
-              id: "pilot-plan",
-              label: "Write pilot plan",
-              prompt: `Write a concrete first-pilot plan for ${account.name} around ${account.firstWedge}. Include sponsor, scope, success criteria, security path, and next executive step.`,
-            },
-            {
-              id: "competitive-plan",
-              label: "Pressure-test competitor",
-              prompt: `Pressure-test my win theme for ${account.name}. Win theme: ${workspaceDraft.winTheme}. Tell me where it is weak, what the top competitor will say, and how I should tighten it.`,
-            },
-            {
-              id: "weekly-attack-plan",
-              label: "Build weekly attack plan",
-              prompt: `Turn my current weekly focus into a practical attack plan for ${account.name}. Weekly focus: ${workspaceDraft.thisWeekFocus}. I want owners, sequence, and suggested messaging.`,
-            },
-          ]}
-        />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <section id="account-log" className="space-y-4 p-0 scroll-mt-6">
-          <SectionHeader
-            title="Account log"
-            subtitle="The place the AE tracks what happened, what changed, what slipped, and what to do next."
-          />
-          <div className="space-y-4">
-            {recentUpdates.map((update) => (
-              <div
-                key={update.id}
-                id={`account-update-${update.id}`}
-                className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4 scroll-mt-6"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-text-secondary">
-                    {update.tag.replace("_", " ")}
-                  </span>
-                  <span className="text-[11px] text-text-faint">
-                    {update.createdAt} · {update.author}
-                  </span>
-                  {isStaleUpdate(update.createdAt) && (
-                    <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-400/95">
-                      Stale
-                    </span>
-                  )}
-                </div>
-                <p className="mt-3 text-[14px] font-medium text-text-primary">
-                  {update.title}
-                </p>
-                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                  {update.note}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[28px] border border-white/8 bg-white/[0.03] p-5 sm:p-6">
-          <SectionHeader
-            title="Update the account"
-            subtitle="Drop in a real note the way a top AE would after a call, internal review, or competitive development."
-          />
-          <div className="grid gap-4">
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Update title
-              </label>
-              <input
-                value={updateTitle}
-                onChange={(event) => setUpdateTitle(event.target.value)}
-                placeholder="e.g. Security team asked for a cleaner deployment story"
-                className="w-full rounded-[18px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Update type
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {(["call", "internal", "risk", "next_step", "exec"] as const).map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setUpdateTag(tag)}
-                    className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
-                      updateTag === tag
-                        ? "border-claude-coral/20 bg-claude-coral/[0.10] text-claude-coral"
-                        : "border-white/10 bg-white/[0.04] text-text-secondary hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    {tag.replace("_", " ")}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-                Notes
-              </label>
-              <textarea
-                value={updateNote}
-                onChange={(event) => setUpdateNote(event.target.value)}
-                rows={6}
-                placeholder="What happened, what it means, and what you need to do next..."
-                className="w-full resize-none rounded-[22px] border border-surface-border/40 bg-surface-muted/20 px-4 py-3 text-[13px] leading-relaxed text-text-primary placeholder:text-text-muted/50 focus:border-claude-coral/30 focus:outline-none"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleAddUpdate}
-              disabled={!updateTitle.trim() || !updateNote.trim()}
-              className="w-fit rounded-full border border-claude-coral/20 bg-claude-coral/[0.10] px-4 py-2 text-[13px] font-medium text-claude-coral disabled:opacity-50"
-            >
-              Add account update
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section id="my-first-30-days" className="space-y-4 scroll-mt-6">
-          <div className="flex items-center gap-2">
-            <BriefcaseBusiness className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              My first 30 days
-            </p>
-          </div>
-          <div className="mt-5 space-y-3">
-            {thisWeek.map((item) => (
-              <div
-                key={item.id}
-                id={`execution-item-${item.id}`}
-                className="flex items-start gap-3 rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4 scroll-mt-6"
-              >
-                <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-claude-coral/70" strokeWidth={1.8} />
-                <div className="min-w-0">
-                  <p className="text-[14px] font-medium text-text-primary">{item.title}</p>
-                  <p className="mt-1 text-[12px] text-text-muted">
-                    {item.owner} · {item.dueLabel}
-                  </p>
-                  <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                    {item.detail}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-text-faint">
-              Risks I&apos;d actively close
-            </p>
-          </div>
-          <div className="mt-5 space-y-3">
-            {account.topBlockers.slice(0, 3).map((blocker) => (
-              <div
-                key={blocker}
-                className="rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4"
-              >
-                <p className="text-[13px] leading-relaxed text-text-secondary">{blocker}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 rounded-[22px] border border-claude-coral/20 bg-white/[0.02] px-4 py-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-claude-coral/75" strokeWidth={1.8} />
-              <p className="text-[12px] font-medium text-text-primary">Executive path I&apos;d run</p>
-            </div>
-            <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-              Use {account.executiveSponsors.slice(0, 2).join(" and ")} to frame the first pilot as a safe wedge,
-              not a broad platform replacement.
-            </p>
-          </div>
-        </section>
       </div>
 
       <section className="space-y-4">

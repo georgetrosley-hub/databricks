@@ -6,8 +6,11 @@ import { Sidebar, type SectionId } from "@/components/layout/sidebar";
 import { StatusBar } from "@/components/layout/status-bar";
 import { ChatPanel } from "@/components/layout/chat-panel";
 import { Overview } from "@/components/sections/overview";
+import { DealProgression } from "@/components/sections/deal-progression";
+import { AccountLog } from "@/components/sections/account-log";
 import { Stakeholders } from "@/components/sections/stakeholders";
 import { Execution } from "@/components/sections/execution";
+import { First30Days } from "@/components/sections/first-30-days";
 import { Signals } from "@/components/sections/signals";
 import { ArtifactsWorkspace } from "@/components/sections/artifacts-workspace";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +79,22 @@ function MainContent() {
         dealHealth={dealHealth}
         onUpdateWorkspaceField={updateWorkspaceField}
         onAddAccountUpdate={addAccountUpdate}
+        onSectionChange={handleSectionChange}
+      />
+    ),
+    dealProgression: (
+      <DealProgression
+        account={account}
+        competitors={competitors}
+        workspaceDraft={workspaceDraft}
+        onUpdateWorkspaceField={updateWorkspaceField}
+        onAddAccountUpdate={addAccountUpdate}
+      />
+    ),
+    accountLog: (
+      <AccountLog
+        accountUpdates={accountUpdates}
+        onAddAccountUpdate={addAccountUpdate}
       />
     ),
     stakeholders: (
@@ -96,6 +115,13 @@ function MainContent() {
         onApproveDecision={handleApproveDecision}
         onDeferDecision={handleDeferDecision}
         onUpdateExecutionStatus={updateExecutionStatus}
+      />
+    ),
+    first30Days: (
+      <First30Days
+        account={account}
+        competitors={competitors}
+        executionItems={executionItems}
       />
     ),
     signals: (
