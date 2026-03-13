@@ -27,7 +27,7 @@ interface ExecutionProps {
 const statusStyles: Record<ExecutionItem["status"], string> = {
   in_progress: "border-sky-400/20 bg-sky-400/[0.08] text-sky-300",
   ready: "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300",
-  blocked: "border-amber-400/20 bg-amber-400/[0.08] text-amber-300",
+  blocked: "border-rose-400/20 bg-rose-500/[0.10] text-rose-300",
   complete: "border-white/10 bg-white/[0.05] text-text-secondary",
 };
 
@@ -148,8 +148,8 @@ export function Execution({
                   </p>
                 </div>
                 {item.blockerDetail && (
-                  <div className="mt-4 rounded-[20px] border border-amber-400/15 bg-amber-400/[0.06] px-4 py-4">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-amber-200/70">Current blocker</p>
+                  <div className="mt-4 rounded-[20px] border border-rose-400/20 bg-rose-500/[0.08] px-4 py-4">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-rose-200/80">Current blocker</p>
                     <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
                       {item.blockerDetail}
                     </p>
@@ -200,7 +200,7 @@ export function Execution({
             <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
               {item.detail}
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[20px] border border-white/8 bg-black/10 px-4 py-4">
                 <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint">Checkpoint</p>
                 <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
@@ -214,7 +214,7 @@ export function Execution({
                     {item.lastUpdated}
                   </p>
                   {isStale(item.lastUpdated) && (
-                    <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400/90">
+                    <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-400/95">
                       Stale
                     </span>
                   )}
@@ -222,8 +222,8 @@ export function Execution({
               </div>
             </div>
             {item.blockerDetail && (
-              <div className="mt-4 rounded-[20px] border border-amber-400/15 bg-amber-400/[0.06] px-4 py-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-amber-200/70">Blocker detail</p>
+              <div className="mt-4 rounded-[20px] border border-rose-400/20 bg-rose-500/[0.08] px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-rose-200/80">Blocker detail</p>
                 <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
                   {item.blockerDetail}
                 </p>

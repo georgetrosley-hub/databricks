@@ -18,7 +18,7 @@ const stanceStyles: Record<Stakeholder["stance"], string> = {
   champion: "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300",
   ally: "border-sky-400/20 bg-sky-400/[0.08] text-sky-300",
   neutral: "border-white/10 bg-white/[0.04] text-text-secondary",
-  blocker: "border-amber-400/20 bg-amber-400/[0.08] text-amber-300",
+  blocker: "border-rose-400/20 bg-rose-500/[0.10] text-rose-300",
   executive: "border-claude-coral/20 bg-claude-coral/[0.08] text-claude-coral/90",
 };
 
@@ -203,7 +203,7 @@ export function Stakeholders({
             <p className="mt-4 text-[13px] leading-relaxed text-text-muted">
               {stakeholder.note}
             </p>
-            <p className="mt-3 text-[12px] leading-relaxed text-amber-200/80">
+            <p className="mt-3 text-[12px] leading-relaxed text-rose-200/90">
               Risk: {stakeholder.risk}
             </p>
           </motion.article>

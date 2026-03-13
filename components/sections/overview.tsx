@@ -127,7 +127,7 @@ export function Overview({
               dealHealth.status === "healthy"
                 ? "bg-emerald-500/10 text-emerald-400/90"
                 : dealHealth.status === "attention"
-                  ? "bg-amber-500/10 text-amber-400/90"
+                  ? "bg-claude-coral/10 text-claude-coral/90"
                   : "bg-rose-500/10 text-rose-400/90"
             }`}
           >
@@ -136,14 +136,14 @@ export function Overview({
                 dealHealth.status === "healthy"
                   ? "bg-emerald-400"
                   : dealHealth.status === "attention"
-                    ? "bg-amber-400"
+                    ? "bg-claude-coral"
                     : "bg-rose-400"
               }`}
             />
             {dealHealth.label}
           </div>
           {blockedItems.length > 0 && (
-            <div className="flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1.5 text-[12px] font-medium text-amber-400/90">
+            <div className="flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1.5 text-[12px] font-medium text-rose-400/95">
               <CircleDot className="h-3.5 w-3.5" />
               {blockedItems.length} blocker{blockedItems.length === 1 ? "" : "s"}
             </div>
@@ -517,7 +517,7 @@ export function Overview({
                     {update.createdAt} · {update.author}
                   </span>
                   {isStaleUpdate(update.createdAt) && (
-                    <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400/90">
+                    <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-400/95">
                       Stale
                     </span>
                   )}

@@ -18,7 +18,7 @@ interface SignalsProps {
 }
 
 const priorityStyles = {
-  critical: "border-amber-400/20 bg-amber-400/[0.08] text-amber-300",
+  critical: "border-rose-400/20 bg-rose-500/[0.10] text-rose-300",
   high: "border-claude-coral/20 bg-claude-coral/[0.08] text-claude-coral/90",
   medium: "border-sky-400/20 bg-sky-400/[0.08] text-sky-300",
   low: "border-white/10 bg-white/[0.04] text-text-secondary",
@@ -27,7 +27,7 @@ const priorityStyles = {
 const dispositionStyles: Record<AccountSignal["disposition"], string> = {
   watch: "border-white/10 bg-white/[0.04] text-text-secondary",
   validated: "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300",
-  challenged: "border-amber-400/20 bg-amber-400/[0.08] text-amber-300",
+  challenged: "border-rose-400/20 bg-rose-500/[0.10] text-rose-300",
 };
 
 export function Signals({

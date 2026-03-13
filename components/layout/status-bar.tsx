@@ -160,7 +160,7 @@ export function StatusBar({
                   dealHealth.status === "healthy"
                     ? "text-emerald-400/90"
                     : dealHealth.status === "attention"
-                      ? "text-amber-400/90"
+                      ? "text-claude-coral/90"
                       : "text-rose-400/90"
                 }`}
                 title={dealHealth.reason}
